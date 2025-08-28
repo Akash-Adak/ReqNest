@@ -30,4 +30,43 @@ public class UserApiUsage {
         this.lastHit = new Date();
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getApiName() {
+        return apiName;
+    }
+
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
+    }
+
+    public int getHits() {
+        return hits;
+    }
+
+    public void setHits(int hits) {
+        this.hits = hits;
+    }
+
+    public Date getLastHit() {
+        return lastHit;
+    }
+
+    public void setLastHit(Date lastHit) {
+        this.lastHit = lastHit;
+    }
 }

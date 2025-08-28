@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Slf4j
+//@Slf4j
 public class RedisService {
 
     @Autowired
@@ -25,7 +25,7 @@ public class RedisService {
             // Deserialize JSON into target class
             return objectMapper.convertValue(value, clazz);
         } catch (Exception e) {
-            log.error("❌ Error reading from Redis: {}", e.getMessage());
+//            log.error("❌ Error reading from Redis: {}", e.getMessage());
             return null;
         }
     }
@@ -34,7 +34,8 @@ public class RedisService {
         try {
             redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
         } catch (Exception e) {
-            log.error("❌ Error writing to Redis: {}", e.getMessage());
+//            log.error("❌ Error writing to Redis: {}", e.getMessage());
+            System.out.println(e);
         }
     }
 }

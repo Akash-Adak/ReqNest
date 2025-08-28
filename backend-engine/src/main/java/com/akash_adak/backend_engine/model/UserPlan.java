@@ -15,4 +15,20 @@ public class UserPlan {
     private String apiKey; // unique per user
 
     private String tier;   // free, premium, enterprise
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getTier() {
+        return tier;
+    }
+
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
 }
