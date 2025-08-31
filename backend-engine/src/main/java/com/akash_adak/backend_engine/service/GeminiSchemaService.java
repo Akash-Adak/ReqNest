@@ -8,7 +8,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Map;
-
 @Service
 public class GeminiSchemaService {
 
@@ -21,6 +20,7 @@ public class GeminiSchemaService {
                 .build();
     }
 
+    // 1. Generate JSON Schema
     public String generateSchema(String prompt) {
         Map<String, Object> body = Map.of(
                 "contents", List.of(
@@ -30,6 +30,38 @@ public class GeminiSchemaService {
                 )
         );
 
+        return callGemini(body);
+    }
+
+    // 2. Generate Test Data from Schema
+    public String generateJson(String prompt) {
+        Map<String, Object> body = Map.of(
+                "contents", List.of(
+                        Map.of("parts", List.of(Map.of("text",
+                                "Generate ONLY a valid JSON object. No explanation, no markdown, no extra text. " + prompt)))
+                )
+        );
+
+        String responseStr = webClient.post()
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        if (responseStr == null) return "{}";
+
+        try {
+            JsonNode root = mapper.readTree(responseStr);
+            return root.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText("{}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{}";
+        }
+    }
+
+
+    // 🔹 Common call handler
+    private String callGemini(Map<String, Object> body) {
         String responseStr = webClient.post()
                 .bodyValue(body)
                 .retrieve()

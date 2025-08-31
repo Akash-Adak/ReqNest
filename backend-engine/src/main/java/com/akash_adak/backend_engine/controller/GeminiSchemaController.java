@@ -1,6 +1,7 @@
 package com.akash_adak.backend_engine.controller;
 
 import com.akash_adak.backend_engine.service.GeminiSchemaService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +47,25 @@ public class GeminiSchemaController {
         public void setPrompt(String prompt) {
             this.prompt = prompt;
         }
+    }
+
+
+
+    @PostMapping("/generate-test-data")
+    public ResponseEntity<Map<String, Object>> generateTestData(@RequestBody Map<String, Object> schema) throws Exception {
+        String prompt = "Generate realistic JSON test data based on this schema:\n" + schema.toString();
+
+        String aiResponse = geminiSchemaService.generateJson(prompt);
+
+        // 🧹 Clean unwanted markdown or code block wrappers
+        String cleaned = aiResponse
+                .replaceAll("```json", "")
+                .replaceAll("```", "")
+                .trim();
+
+        // ✅ Now parse cleaned JSON
+        Map<String, Object> result = new ObjectMapper().readValue(cleaned, Map.class);
+
+        return ResponseEntity.ok(result);
     }
 }

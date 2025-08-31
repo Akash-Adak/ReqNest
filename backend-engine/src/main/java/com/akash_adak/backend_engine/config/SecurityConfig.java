@@ -31,13 +31,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/api/**", "/login**", "/v3/**","/data/**").permitAll()
-                        .requestMatchers("/apis/**","/sdk/**","/sandbox/**","/cloud-api/**").authenticated()
+                        .requestMatchers( "/api/**","/v3/**","/data/**","/api/schema/**","/email/**").permitAll()
+                        .requestMatchers("/apis/**","/cloud-api/**").authenticated()
                         .anyRequest().authenticated()
                 )
-//                .oauth2Login(oauth2 -> oauth2
-//                        .successHandler(successHandler)
-//                )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
