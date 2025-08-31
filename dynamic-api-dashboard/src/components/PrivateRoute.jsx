@@ -3,14 +3,22 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 function PrivateRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Show nothing (or a loader) until auth is resolved
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen text-lg">
+      Checking authentication...
+    </div>;
+  }
 
   if (!user) {
-    // not logged in → redirect to login
+    // Not logged in → redirect to login ("/")
     return <Navigate to="/" replace />;
   }
 
-  return children; // logged in → allow access
+  // Logged in → allow access
+  return children;
 }
 
 export default PrivateRoute;

@@ -28,129 +28,161 @@ export default function Plans() {
   };
   const daysRemaining = getDaysRemaining();
 
-  const handleUpgrade = async (plan) => {
-    if (!userData) {
-      toast.error("⚠️ Please log in to upgrade your plan.");
+const handleUpgrade = async (plan) => {
+  if (!userData) {
+    toast.error("⚠️ Please log in to upgrade your plan.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setSelectedPlan(plan);
+
+    // Downgrade to FREE
+    if (plan === "FREE") {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/upgrade?apiKey=${encodeURIComponent(
+            email
+          )}&newTier=${encodeURIComponent(plan)}`,
+          {
+            method: "POST",
+            credentials: "include",
+          }
+        );
+        if (res.ok) {
+          const updatedUser = {
+            ...userData,
+            tier: "FREE",
+            subscriptionEndDate: null,
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          setUserData(updatedUser);
+          toast.success("✅ Successfully switched to Free plan");
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          throw new Error("Failed to downgrade");
+        }
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+        setSelectedPlan(null);
+      }
       return;
     }
 
-    try {
-      setLoading(true);
-      setSelectedPlan(plan);
+    // Paid plan flow
+    const res = await fetch("http://localhost:8080/api/payments/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        amount: plan === "PREMIUM" ? 499 : 4999,
+      }),
+    });
 
-      // Downgrade to FREE
-      if (plan === "FREE") {
+    if (!res.ok) throw new Error("Failed to create order");
+    const order = await res.json();
+
+    const options = {
+      key: order.key,
+      amount: order.amount,
+      currency: order.currency,
+      name: "ReqNest API Service",
+      description: `${plan} Plan Subscription`,
+      order_id: order.orderId,
+      handler: async function (response) {
         try {
-          const res = await fetch(
-            `http://localhost:8080/api/upgrade?apiKey=${encodeURIComponent(
-              email
-            )}&newTier=${encodeURIComponent(plan)}`,
+          const verifyRes = await fetch(
+            "http://localhost:8080/api/payments/verify",
             {
               method: "POST",
+              headers: { "Content-Type": "application/json" },
               credentials: "include",
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                email: email,
+                plan,
+              }),
             }
           );
-          if (res.ok) {
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.verified) {
+            toast.success(`🎉 Payment successful! Upgraded to ${plan} plan.`);
+
+            // Set subscription expiry
+            const subscriptionEnd = new Date();
+            subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+
             const updatedUser = {
               ...userData,
-              tier: "FREE",
-              subscriptionEndDate: null,
+              tier: plan,
+              subscriptionEndDate: subscriptionEnd.toISOString(),
             };
             localStorage.setItem("user", JSON.stringify(updatedUser));
             setUserData(updatedUser);
-            toast.success("✅ Successfully switched to Free plan");
+
+            // 📧 Send invoice/billing email
+                    try {
+            const emailForm = new FormData();
+            emailForm.append("to", email);
+            emailForm.append("subject", `Your ${plan} Plan Invoice - ReqNest`);
+            emailForm.append(
+              "body",
+              `Hi ${email},
+
+          Thank you for upgrading to the ${plan} plan.
+
+          ---------------------------------------
+          Plan: ${plan}
+          Amount Paid: ₹${plan === "PREMIUM" ? 499 : 4999}
+          Subscription valid until: ${subscriptionEnd.toDateString()}
+          ---------------------------------------
+
+          Enjoy all the premium features of ReqNest 🚀
+
+          — Team ReqNest
+          (This is an automated email, please do not reply.)`
+            );
+
+            await fetch("http://localhost:8080/email/send", {
+              method: "POST",
+              body: emailForm,
+              credentials: "include",
+            });
+
+            console.log("📧 Invoice email sent");
+          } catch (err) {
+            console.error("Email sending failed", err);
+          }
+
+
             setTimeout(() => window.location.reload(), 1500);
           } else {
-            throw new Error("Failed to downgrade");
+            toast.error("❌ Payment verification failed");
           }
         } catch (err) {
           toast.error(err.message);
-        } finally {
-          setLoading(false);
-          setSelectedPlan(null);
         }
-        return;
-      }
+      },
+      prefill: { email },
+      theme: { color: "#4f46e5" },
+    };
 
-      // Paid plan flow
-      const res = await fetch(
-        "http://localhost:8080/api/payments/create-order",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            amount: plan === "PREMIUM" ? 499 : 4999,
-          }),
-        }
-      );
+    const razor = new window.Razorpay(options);
+    razor.open();
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+    setSelectedPlan(null);
+  }
+};
 
-      if (!res.ok) throw new Error("Failed to create order");
-      const order = await res.json();
-
-      const options = {
-        key: order.key,
-        amount: order.amount,
-        currency: order.currency,
-        name: "ReqNest API Service",
-        description: `${plan} Plan Subscription`,
-        order_id: order.orderId,
-        handler: async function (response) {
-          try {
-            const verifyRes = await fetch(
-              "http://localhost:8080/api/payments/verify",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                  orderId: response.razorpay_order_id,
-                  paymentId: response.razorpay_payment_id,
-                  signature: response.razorpay_signature,
-                  email: email,
-                  plan,
-                }),
-              }
-            );
-
-            const verifyData = await verifyRes.json();
-            if (verifyData.verified) {
-              toast.success(
-                `🎉 Payment successful! Upgraded to ${plan} plan.`
-              );
-
-              const subscriptionEnd = new Date();
-              subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
-
-              const updatedUser = {
-                ...userData,
-                tier: plan,
-                subscriptionEndDate: subscriptionEnd.toISOString(),
-              };
-              localStorage.setItem("user", JSON.stringify(updatedUser));
-              setUserData(updatedUser);
-
-              setTimeout(() => window.location.reload(), 1500);
-            } else {
-              toast.error("❌ Payment verification failed");
-            }
-          } catch (err) {
-            toast.error(err.message);
-          }
-        },
-        prefill: { email },
-        theme: { color: "#4f46e5" },
-      };
-
-      const razor = new window.Razorpay(options);
-      razor.open();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-      setSelectedPlan(null);
-    }
-  };
 
   const plans = [
     {

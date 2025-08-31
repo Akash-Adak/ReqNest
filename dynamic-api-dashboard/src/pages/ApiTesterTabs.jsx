@@ -159,8 +159,10 @@ export default function ApiTesterTabs() {
         let parsed = typeof data.schemaJson === "string" ? JSON.parse(data.schemaJson) : data.schemaJson;
         if (parsed?.schemaJson) parsed = parsed.schemaJson;
         setSchema(parsed);
-        const sample = generateEmptyKeysFromSchema(parsed);
-        setRequestBody(JSON.stringify(sample, null, 2));
+          generateAiSample(parsed).then((sample) => {
+          setRequestBody(JSON.stringify(sample, null, 2));
+           });
+
         setSchemaError(null);
       })
       .catch((err) => setSchemaError(err.message || String(err)))
@@ -342,6 +344,23 @@ export default function ApiTesterTabs() {
       return "24 hours";
     }
   }
+
+async function generateAiSample(schema) {
+  try {
+    const res = await axios.post(
+      "http://localhost:8080/api/schema/generate-test-data",
+      schema, 
+      { withCredentials: true }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("AI suggestion failed", err);
+    return generateEmptyKeysFromSchema(schema);
+  }
+}
+
+
+
 
   return (
     <div className={`min-h-screen ${theme.background} ${theme.text} transition-colors duration-200`}>
@@ -525,6 +544,15 @@ export default function ApiTesterTabs() {
                       )}
                     </div>
                   )}
+                                    <button
+                  className={`${theme.button} px-3 py-1 rounded text-xs`}
+                  onClick={async () => {
+                    const aiSample = await generateAiSample(schema);
+                    setRequestBody(JSON.stringify(aiSample, null, 2));
+                  }}
+                >
+                  Suggest Test Data with AI
+                </button>
 
                   <div className="flex justify-end pt-2">
                     <button 
