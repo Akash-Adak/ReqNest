@@ -127,41 +127,29 @@ const handleUpgrade = async (plan) => {
             setUserData(updatedUser);
 
             // 📧 Send invoice/billing email
-                    try {
-            const emailForm = new FormData();
-            emailForm.append("to", email);
-            emailForm.append("subject", `Your ${plan} Plan Invoice - ReqNest`);
-            emailForm.append(
-              "body",
-              `Hi ${email},
+          //           try {
+          //   const emailForm = new FormData();
+          //   emailForm.append("to", email);
+          //   emailForm.append("subject", `Your ${plan} Plan Invoice - ReqNest`);
+          //   emailForm.append("body", "Please find your invoice attached.");
+          //   emailForm.append("plan", plan);
+          //   emailForm.append("amount", plan === "PREMIUM" ? "499" : "4999");
+          //   emailForm.append("validUntil", subscriptionEnd.toDateString());
 
-          Thank you for upgrading to the ${plan} plan.
-
-          ---------------------------------------
-          Plan: ${plan}
-          Amount Paid: ₹${plan === "PREMIUM" ? 499 : 4999}
-          Subscription valid until: ${subscriptionEnd.toDateString()}
-          ---------------------------------------
-
-          Enjoy all the premium features of ReqNest 🚀
-
-          — Team ReqNest
-          (This is an automated email, please do not reply.)`
-            );
-
-            await fetch("http://localhost:8080/email/send", {
-              method: "POST",
-              body: emailForm,
-              credentials: "include",
-            });
-
-            console.log("📧 Invoice email sent");
-          } catch (err) {
-            console.error("Email sending failed", err);
-          }
+          //   await fetch("http://localhost:8080/email/send", {
+          //     method: "POST",
+          //     body: emailForm,
+          //     credentials: "include",
+          //   });
 
 
-            setTimeout(() => window.location.reload(), 1500);
+          //   console.log("📧 Invoice email sent");
+          // } catch (err) {
+          //   console.error("Email sending failed", err);
+          // }
+
+
+          //   setTimeout(() => window.location.reload(), 1500);
           } else {
             toast.error("❌ Payment verification failed");
           }

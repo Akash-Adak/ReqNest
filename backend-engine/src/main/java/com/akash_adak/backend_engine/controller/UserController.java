@@ -87,6 +87,18 @@ public class UserController {
         }
     }
 
+    @GetMapping("/user/me")
+    public ResponseEntity<?> getUser(OAuth2AuthenticationToken authToken) {
+        if (authToken == null || authToken.getPrincipal() == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        try {
+            String email = (String) authToken.getPrincipal().getAttributes().get("email");
+            Map<String, Object> stats = userService.getUserdetails(email);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch stats", "details", e.getMessage()));
+        }
+    }
+
 
 }
 

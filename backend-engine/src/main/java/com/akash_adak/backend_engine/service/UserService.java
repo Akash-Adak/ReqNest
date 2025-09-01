@@ -2,8 +2,11 @@ package com.akash_adak.backend_engine.service;
 
 import com.akash_adak.backend_engine.model.User;
 import com.akash_adak.backend_engine.model.UserPlan;
+import com.akash_adak.backend_engine.notification.EmailRequest;
+import com.akash_adak.backend_engine.notification.EmailService;
 import com.akash_adak.backend_engine.repository.UserPlanRepository;
 import com.akash_adak.backend_engine.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -29,6 +33,8 @@ public class UserService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private EmailService emailService;
     // Create or update user after OAuth login
     public User createOrUpdateUser(Map<String, Object> attributes) {
         String email = (String) attributes.get("email");
@@ -53,7 +59,32 @@ public class UserService {
         user.setPicture(picture != null ? picture : avatarUrl);
         user.setLastLogin(LocalDateTime.now());
         if (user.getTier() == null) user.setTier("FREE");
+        EmailRequest emailRequest=new EmailRequest();
+        emailRequest.setTo(user.getEmail());
+        emailRequest.setSubject("Welcome to ReqNest 🚀");
+        emailRequest.setMessage("Hello " + user.getName() + ",\n\n" +
 
+                "A huge welcome to ReqNest! \uD83C\uDF89 We're thrilled to have you join our community of innovators. Your account is now active and ready to go.\n\n" +
+
+                "To get started, here's what you can do:\n" +
+                "• **Explore your Dashboard:** Manage your APIs and schemas in one central place.\n" +
+                "• **Generate Schemas Faster:** Use our automated tools to accelerate your development.\n" +
+                "• **Check out the Docs:** Learn how to get the most out of ReqNest's features.\n\n" +
+
+                "If you have any questions, our support team is happy to assist.\n" +
+                "\uD83D\uDC49 Email us at: support@reqnest.com\n\n" +
+
+                "Thank you for joining us. We're excited to see what you build!\n\n" +
+
+                "Best regards,\n" +
+                "The ReqNest Team ✨\n" +
+                "--------------------------------------------------\n" +
+                "This is an automated message. Please do not reply directly.");
+        try {
+            emailService.sendSimpleEmail(emailRequest);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
         return userRepository.save(user);
     }
 
@@ -121,5 +152,18 @@ public class UserService {
     }
 
 
+    public Map<String, Object> getUserdetails(String email) {
+        Map<String, Object> ans=new HashMap<>();
 
+        Optional<User> userde=userRepository.findByEmail(email);
+        if(userde.isPresent()){
+            User user=userde.get();
+            ans.put("email",user.getEmail());
+            ans.put("name",user.getName());
+            ans.put("createdAt",user.getCreatedAt());
+            ans.put("picture",user.getPicture());
+        }
+
+        return ans;
+    }
 }

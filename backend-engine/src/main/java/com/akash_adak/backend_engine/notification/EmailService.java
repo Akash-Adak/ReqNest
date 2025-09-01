@@ -1,19 +1,17 @@
 package com.akash_adak.backend_engine.notification;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 @Service
 public class EmailService {
@@ -21,74 +19,67 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendEmail(EmailRequest req) throws MessagingException, IOException {
+    public void sendEmail(EmailRequest request) throws MessagingException, IOException {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        MimeMessageHelper helper = new MimeMessageHelper(message, true); // true = multipart (attachments allowed)
 
-        helper.setTo(req.getTo().toArray(new String[0]));
-        helper.setSubject(req.getSubject());
-        helper.setText(req.getBody(), req.isHtml());
+        helper.setTo(request.getTo());
+        helper.setSubject(request.getSubject());
 
-        // Handle attachments (if uploaded by user)
-        if (req.getAttachments() != null) {
-            for (MultipartFile file : req.getAttachments()) {
-                helper.addAttachment(file.getOriginalFilename(),
-                        new ByteArrayResource(file.getBytes()));
-            }
-        }
+        // ✅ HTML Template for email
+        String htmlContent = """
+                <html>
+                  <body style="font-family: Arial, sans-serif; color: #333;">
+                    <h2 style="color:#4f46e5;">ReqNest Subscription Invoice</h2>
+                    <p>Hi %s,</p>
+                    <p>Thank you for upgrading to the <b>%s</b> plan.</p>
+                    <table style="border-collapse: collapse; width: 100%%; margin-top: 10px;">
+                      <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Plan</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">%s</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Amount Paid</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">₹%s</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Valid Until</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">%s</td>
+                      </tr>
+                    </table>
+                    <p style="margin-top:20px;">Enjoy all the premium features of ReqNest 🚀</p>
+                    <p style="font-size:12px; color:#888;">— Team ReqNest<br>(This is an automated email, please do not reply.)</p>
+                  </body>
+                </html>
+                """.formatted(
+                request.getTo(),
+                request.getPlan(),
+                request.getPlan(),
+                request.getAmount(),
+                request.getValidUntil()
+        );
 
-        // Handle dynamic cases
-        if ("PAYMENT".equalsIgnoreCase(req.getType())) {
-            // Generate PDF bill
-            ByteArrayOutputStream pdfStream = generatePaymentBill(req);
-            helper.addAttachment("invoice.pdf",
-                    new ByteArrayResource(pdfStream.toByteArray()));
-        } else if ("WELCOME".equalsIgnoreCase(req.getType())) {
-            // Example: attach a welcome guide PDF
-            ByteArrayOutputStream pdfStream = generateWelcomePdf();
-            helper.addAttachment("welcome.pdf",
-                    new ByteArrayResource(pdfStream.toByteArray()));
-        }
+        helper.setText(htmlContent, true);
+
+        // ✅ Attach Invoice PDF
+        byte[] pdfBytes = InvoiceGenerator.generateInvoice(request);
+        helper.addAttachment("Invoice-" + request.getPlan() + ".pdf",
+                new ByteArrayResource(pdfBytes));
 
         mailSender.send(message);
     }
 
-    // Generate Payment PDF dynamically
-    private ByteArrayOutputStream generatePaymentBill(EmailRequest req) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            Document document = new Document();
-            PdfWriter.getInstance(document, outputStream);
-            document.open();
 
-            document.add(new Paragraph("Payment Invoice", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("==================================="));
-            document.add(new Paragraph("Customer: " + String.join(",", req.getTo())));
-            document.add(new Paragraph("Subject: " + req.getSubject()));
-            document.add(new Paragraph("Message: " + req.getBody()));
-            document.add(new Paragraph("Amount: ₹1000")); // You can make this dynamic
 
-            document.close();
-        } catch (DocumentException e) {
-            throw new IOException("Error creating PDF", e);
-        }
-        return outputStream;
-    }
 
-    // Generate Welcome PDF dynamically
-    private ByteArrayOutputStream generateWelcomePdf() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            Document document = new Document();
-            PdfWriter.getInstance(document, outputStream);
-            document.open();
+    // ✅ Simple Text Email (after login, notifications, etc.)
+    @Async
+    public void sendSimpleEmail(EmailRequest request) throws MessagingException {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(request.getTo());
+        message.setSubject(request.getSubject());
+        message.setText(request.getMessage());
 
-            document.add(new Paragraph("🎉 Welcome to Our Platform! 🎉", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-            document.add(new Paragraph("We’re glad to have you on board. Enjoy using our services."));
-            document.close();
-        } catch (DocumentException e) {
-            throw new IOException("Error creating PDF", e);
-        }
-        return outputStream;
+        mailSender.send(message);
     }
 }

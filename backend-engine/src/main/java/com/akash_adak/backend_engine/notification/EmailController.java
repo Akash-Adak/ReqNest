@@ -25,4 +25,14 @@ public class EmailController {
             return ResponseEntity.status(500).body("❌ Failed to send email: " + e.getMessage());
         }
     }
+
+    @PostMapping("/send-text")
+    public ResponseEntity<String> sendSimpleEmail(@RequestBody EmailRequest emailRequest) {
+        try {
+            emailService.sendSimpleEmail(emailRequest);
+            return ResponseEntity.ok("✅ Email sent successfully to: " + emailRequest.getTo());
+        } catch (MessagingException e) {
+            return ResponseEntity.status(500).body("❌ Failed to send email: " + e.getMessage());
+        }
+    }
 }

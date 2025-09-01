@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api";
 
 const AuthContext = createContext();
@@ -6,29 +6,23 @@ const AuthContext = createContext();
 const USER_STORAGE_KEY = "user";
 const USER_EXPIRY_KEY = "user_expiry";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
-const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 min
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const refreshTimer = useRef(null);
 
   useEffect(() => {
     const init = async () => {
       const loaded = loadUserFromStorage();
 
-      if (!loaded) {
-        // full fetch if nothing valid in storage
-        await fetchUser(false);
-      } else {
-        // background check, don’t block UI
-        fetchUser(true);
-        setLoading(false);
+    if (!loaded) {
+  await fetchUser(); // backend will return 401 if no cookie / invalid
       }
+
+      setLoading(false);
     };
 
     init();
-    return () => stopBackgroundRefresh();
   }, []);
 
   const clearStorage = () => {
@@ -44,7 +38,6 @@ export const AuthProvider = ({ children }) => {
 
       if (storedUser && expiry && now < Number(expiry)) {
         setUser(JSON.parse(storedUser));
-        startBackgroundRefresh();
         return true;
       } else {
         clearStorage();
@@ -57,11 +50,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchUser = async (silent = false) => {
-    if (!silent) setLoading(true);
-
+  const fetchUser = async () => {
     try {
-      const res = await api.get("/api/user", { withCredentials: true });
+      const res = await api.get("/api/user/me", { withCredentials: true });
 
       if (res.data?.name) {
         setUser(res.data);
@@ -69,38 +60,18 @@ export const AuthProvider = ({ children }) => {
         const expiryTime = Date.now() + EXPIRY_TIME;
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(res.data));
         localStorage.setItem(USER_EXPIRY_KEY, expiryTime.toString());
-
-        startBackgroundRefresh();
       } else {
         handleLogoutCleanup();
       }
     } catch (err) {
       console.error("Fetch user failed:", err);
-      if (!silent) handleLogoutCleanup();
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
-
-  const startBackgroundRefresh = () => {
-    if (refreshTimer.current) return; // already running
-    refreshTimer.current = setInterval(() => {
-      console.log("🔄 Background refresh triggered...");
-      fetchUser(true);
-    }, REFRESH_INTERVAL);
-  };
-
-  const stopBackgroundRefresh = () => {
-    if (refreshTimer.current) {
-      clearInterval(refreshTimer.current);
-      refreshTimer.current = null;
+      handleLogoutCleanup();
     }
   };
 
   const handleLogoutCleanup = () => {
     setUser(null);
     clearStorage();
-    stopBackgroundRefresh();
   };
 
   const login = (provider) => {
