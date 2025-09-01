@@ -2,23 +2,22 @@ package com.akash_adak.backend_engine.notification;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-
 @Data
 public class EmailRequest {
-    private List<String> to;
+    private String to;
     private String subject;
     private String body;
-    private boolean html;
-    private String type; // e.g. "PAYMENT", "WELCOME", "ALERT"
-    private List<MultipartFile> attachments;
+    private String message;
+    // For invoice
+    private String plan;
+    private String amount;
+    private String validUntil;
 
-    public List<String> getTo() {
+    public String getTo() {
         return to;
     }
 
-    public void setTo(List<String> to) {
+    public void setTo(String to) {
         this.to = to;
     }
 
@@ -38,27 +37,36 @@ public class EmailRequest {
         this.body = body;
     }
 
-    public boolean isHtml() {
-        return html;
+    public String getMessage() {
+        return message;
     }
 
-    public void setHtml(boolean html) {
-        this.html = html;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String getType() {
-        return type;
+    public String getPlan() {
+        return plan;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setPlan(String plan) {
+        this.plan = plan;
     }
 
-    public List<MultipartFile> getAttachments() {
-        return attachments;
+    public String getAmount() {
+        return amount;
     }
 
-    public void setAttachments(List<MultipartFile> attachments) {
-        this.attachments = attachments;
+    public void setAmount(String amount) {
+        this.amount = amount;
     }
+
+    public String getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(String validUntil) {
+        this.validUntil = validUntil;
+    }
+
 }
