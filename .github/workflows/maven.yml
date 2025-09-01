@@ -22,4 +22,5 @@ jobs:
           cache: maven
 
       - name: Build backend with Maven
-        run: mvn -B package --file backend-engine/pom.xml
+        working-directory: backend-engine
+        run: mvn -B clean install
