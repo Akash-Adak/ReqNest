@@ -1,3 +1,4 @@
+// src/context/AuthProvider.js
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api";
 
@@ -13,10 +14,25 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const init = async () => {
-      const loaded = loadUserFromStorage();
+      // 1️⃣ Check query params after redirect
+      const params = new URLSearchParams(window.location.search);
+      const loginSuccess = params.get("login") === "success";
 
-    if (!loaded) {
-  await fetchUser(); // backend will return 401 if no cookie / invalid
+      if (loginSuccess) {
+        try {
+          await fetchUser(); // fetch user from backend (cookie already set)
+        } finally {
+          // clean up query params from URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          setLoading(false);
+        }
+        return;
+      }
+
+      // 2️⃣ If not a login redirect → try storage
+      const loaded = loadUserFromStorage();
+      if (!loaded) {
+        // no user in storage, nothing to do
       }
 
       setLoading(false);
@@ -25,11 +41,13 @@ export const AuthProvider = ({ children }) => {
     init();
   }, []);
 
+  /** Clears localStorage keys */
   const clearStorage = () => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(USER_EXPIRY_KEY);
   };
 
+  /** Loads user from localStorage if valid */
   const loadUserFromStorage = () => {
     try {
       const storedUser = localStorage.getItem(USER_STORAGE_KEY);
@@ -44,12 +62,13 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
     } catch (e) {
-      console.error("Error reading storage", e);
+      console.error("Error reading storage:", e);
       clearStorage();
       return false;
     }
   };
 
+  /** Fetches user from backend using session cookie */
   const fetchUser = async () => {
     try {
       const res = await api.get("/api/user/me", { withCredentials: true });
@@ -69,16 +88,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /** Resets user state + clears storage */
   const handleLogoutCleanup = () => {
     setUser(null);
     clearStorage();
   };
 
+  /** Starts login flow with OAuth2 provider */
   const login = (provider) => {
     handleLogoutCleanup();
     window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
   };
 
+  /** Logs out backend + clears storage */
   const logout = async () => {
     try {
       await api.post("/api/logout", {}, { withCredentials: true });

@@ -109,12 +109,13 @@ export default function ApiTesterTabs() {
 
     // Load logged-in user from localStorage
     const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    console.log("logged user",loggedInUser.apikey);
     if (loggedInUser) {
       setUser(loggedInUser);
 
       setHeadersText(JSON.stringify({
         "Content-Type": "application/json",
-        "X-API-KEY": loggedInUser.apiKey || loggedInUser.email,
+        "X-API-KEY": loggedInUser.apikey ,
         "X-USER-TIER": loggedInUser.tier
       }, null, 2));
     }

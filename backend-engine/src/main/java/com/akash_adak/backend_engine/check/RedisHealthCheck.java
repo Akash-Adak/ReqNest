@@ -20,6 +20,7 @@ public class RedisHealthCheck implements CommandLineRunner {
         try {
             redisTemplate.opsForValue().set("health:test", "OK", 10, TimeUnit.SECONDS);
             String value = redisTemplate.opsForValue().get("health:test");
+            redisTemplate.getConnectionFactory().getConnection().flushAll();
             System.out.println("✅ Redis connected! Value = " + value);
         } catch (Exception e) {
             System.err.println("❌ Redis connection failed: " + e.getMessage());
