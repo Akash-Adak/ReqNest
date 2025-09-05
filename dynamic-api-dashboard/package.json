@@ -25,6 +25,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.8.1",
     "swagger-ui-react": "^5.27.1"
   },
@@ -41,5 +42,10 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.3.3",
     "vite": "^7.1.0"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

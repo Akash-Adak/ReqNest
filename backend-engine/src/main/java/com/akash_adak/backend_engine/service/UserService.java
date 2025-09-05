@@ -1,5 +1,6 @@
 package com.akash_adak.backend_engine.service;
 
+import com.akash_adak.backend_engine.config.JwtUtil;
 import com.akash_adak.backend_engine.model.User;
 import com.akash_adak.backend_engine.model.UserPlan;
 import com.akash_adak.backend_engine.notification.EmailRequest;
@@ -14,12 +15,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -35,7 +36,13 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
-    // Create or update user after OAuth login
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private RedisService redisService;
+
     public User createOrUpdateUser(Map<String, Object> attributes) {
         String email = (String) attributes.get("email");
         if (email == null) throw new IllegalArgumentException("Email not found in OAuth attributes");
@@ -52,6 +59,7 @@ public class UserService {
             newUser.setProvider(provider);
             newUser.setCreatedAt(LocalDateTime.now());
             newUser.setTier("FREE");
+
             return newUser;
         });
 
@@ -162,8 +170,25 @@ public class UserService {
             ans.put("name",user.getName());
             ans.put("createdAt",user.getCreatedAt());
             ans.put("picture",user.getPicture());
+            ans.put("apikey",user.getApikey());
+            ans.put("tier",user.getTier());
         }
 
         return ans;
     }
+
+    public void logoutUser(String token) {
+        try {
+            String email = jwtUtil.extractEmail(token);
+            if (email != null) {
+                String key = "JWT_SESSION:" + email;
+                redisService.delete(key);
+                System.out.println("✅ Redis session cleared for: " + email);
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Invalid token during logout: " + e.getMessage());
+        }
+    }
+
+
 }

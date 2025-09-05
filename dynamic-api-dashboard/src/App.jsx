@@ -13,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Plans from "./pages/Plans";
 import Footer from "./components/Footer";
 
-import ApiDetails from "./pages/ApiDetails";
+import SdkSetup from "./pages/SdkSetup";
 
 function App() {
   return (
@@ -34,7 +34,7 @@ function App() {
 
         
           <Route path="/test/:apiName" element={<PrivateRoute><ApiTesterTabs /></PrivateRoute>} />
-            <Route path="/details/:apiName" element={<PrivateRoute><ApiDetails /></PrivateRoute>} />
+            <Route path="/sdk/:apiName" element={<PrivateRoute><SdkSetup /></PrivateRoute>} />
        
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

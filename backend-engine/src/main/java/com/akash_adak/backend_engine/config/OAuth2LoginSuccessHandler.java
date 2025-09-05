@@ -15,7 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,8 +44,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
         String email = principal.getAttribute("email");
 
-        // 🔎 Check if session already exists in Redis
-        // 🔎 Check if session already exists in Redis
+
         Map<String, Object> existingSession = redisService.get("JWT_SESSION:" + email, Map.class);
         if (existingSession != null) {
             String token = (String) existingSession.get("token");
@@ -71,6 +74,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             newUser.setEmail(email);
             newUser.setProvider(provider);
             newUser.setCreatedAt(LocalDateTime.now());
+            newUser.setApikey(generateApiKey(email));
             return newUser;
         });
 
@@ -102,7 +106,27 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.addCookie(cookie);
 
         System.out.println("New session created in Redis for user: " + email);
-        response.sendRedirect("http://localhost:5173");
+        response.sendRedirect("http://localhost:5173?login=success&provider=" + provider);
+
     }
+
+    public  String generateApiKey(String email) {
+        try {
+            String input = email + System.currentTimeMillis() + getRandomSalt();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating API key", e);
+        }
+    }
+
+    private  String getRandomSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(salt);
+    }
+
 
 }

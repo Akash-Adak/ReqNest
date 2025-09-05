@@ -399,14 +399,14 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
               )}
               Download PDF
             </button>
-
             <button
-              onClick={() => navigate(`/details/${api.name}`)}
+              onClick={() => navigate(`/sdk/${api.name}`)}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
             >
               <EyeIcon className="h-4 w-4" />
-              View Details
+              SDK Setup
             </button>
+
           </div>
         </div>
       </div>

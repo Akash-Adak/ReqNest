@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-//@Slf4j
 public class RedisService {
 
     @Autowired
@@ -22,10 +21,8 @@ public class RedisService {
             Object value = redisTemplate.opsForValue().get(key);
             if (value == null) return null;
 
-            // Deserialize JSON into target class
             return objectMapper.convertValue(value, clazz);
         } catch (Exception e) {
-//            log.error("❌ Error reading from Redis: {}", e.getMessage());
             return null;
         }
     }
@@ -34,8 +31,26 @@ public class RedisService {
         try {
             redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
         } catch (Exception e) {
-//            log.error("❌ Error writing to Redis: {}", e.getMessage());
-            System.out.println(e);
+            System.out.println("❌ Error writing to Redis: " + e.getMessage());
+        }
+    }
+
+    public void delete(String key) {
+        try {
+            redisTemplate.delete(key);
+        } catch (Exception e) {
+            System.out.println("❌ Error deleting from Redis: " + e.getMessage());
+        }
+    }
+
+    // ✅ New method: check if key exists
+    public boolean exists(String key) {
+        try {
+            Boolean result = redisTemplate.hasKey(key);
+            return result != null && result;
+        } catch (Exception e) {
+            System.out.println("❌ Error checking key existence in Redis: " + e.getMessage());
+            return false;
         }
     }
 }
