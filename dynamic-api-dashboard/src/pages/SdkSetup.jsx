@@ -5,6 +5,7 @@ import axios from "axios";
 import { FiCopy, FiCheck, FiArrowLeft, FiDownload, FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 export default function SdkSetup() {
+  const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const { apiName } = useParams();
   const [api, setApi] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function SdkSetup() {
     setError(null);
 
     axios
-      .get(`http://localhost:8080/apis/${apiName}`, { withCredentials: true })
+      .get(`${baseUrl}/apis/${apiName}`, { withCredentials: true })
       .then((res) => setApi(res.data))
       .catch((err) => {
         console.error("Error fetching API:", err);
@@ -144,7 +145,7 @@ export default function SdkSetup() {
                 code={`import ReqNestSDK from "reqnest-sdk";
 
 const sdk = new ReqNestSDK({
-  baseUrl: "http://localhost:8080"
+  baseUrl: "${baseUrl}"
 });
 
 sdk.setApiKey("YOUR_API_KEY_HERE");

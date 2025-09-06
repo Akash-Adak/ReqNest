@@ -18,6 +18,7 @@ import jsPDF from "jspdf";
 import axios from "axios";
 
 export default function ApiList() {
+  const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const navigate = useNavigate();
   const [apis, setApis] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ export default function ApiList() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/user", { withCredentials: true });
+        const res = await axios.get(`${baseUrl}/api/user`, { withCredentials: true });
         setUserEmail(res.data.email);
       } catch {
         setUserEmail(""); // not logged in
@@ -73,7 +74,7 @@ export default function ApiList() {
     }
     setDeleting(api.id);
     try {
-      await axios.delete(`http://localhost:8080/apis/${api.name}`, { withCredentials: true });
+      await axios.delete(`${baseUrl}/apis/${api.name}`, { withCredentials: true });
       setApis(apis.filter(a => a.id !== api.id));
     } catch (err) {
       console.error("Error deleting API:", err);
@@ -86,7 +87,7 @@ export default function ApiList() {
  const downloadDocs = async (api) => {
   setDownloading(prev => prev + 1);  // increment counter
   try {
-    const res = await axios.get(`http://localhost:8080/apis/${api.name}`, { withCredentials: true });
+    const res = await axios.get(`${baseUrl}/apis/${api.name}`, { withCredentials: true });
     const data = res.data;
     const schema = typeof data.schemaJson === "string" ? JSON.parse(data.schemaJson) : data.schemaJson;
     const doc = new jsPDF();

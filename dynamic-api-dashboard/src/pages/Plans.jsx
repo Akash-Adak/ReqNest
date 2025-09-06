@@ -4,6 +4,7 @@ import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Plans() {
+  const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [userData, setUserData] = useState(null);
@@ -42,7 +43,7 @@ const handleUpgrade = async (plan) => {
     if (plan === "FREE") {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/upgrade?apiKey=${encodeURIComponent(
+          `${baseUrl}/api/upgrade?apiKey=${encodeURIComponent(
             email
           )}&newTier=${encodeURIComponent(plan)}`,
           {
@@ -73,7 +74,7 @@ const handleUpgrade = async (plan) => {
     }
 
     // Paid plan flow
-    const res = await fetch("http://localhost:8080/api/payments/create-order", {
+    const res = await fetch(`${baseUrl}/api/payments/create-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -95,7 +96,7 @@ const handleUpgrade = async (plan) => {
       handler: async function (response) {
         try {
           const verifyRes = await fetch(
-            "http://localhost:8080/api/payments/verify",
+            `${baseUrl}/api/payments/verify`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -136,7 +137,7 @@ const handleUpgrade = async (plan) => {
             emailForm.append("amount", plan === "PREMIUM" ? "499" : "4999");
             emailForm.append("validUntil", subscriptionEnd.toDateString());
 
-            await fetch("http://localhost:8080/email/send", {
+            await fetch(`${baseUrl}/email/send`, {
               method: "POST",
               body: emailForm,
               credentials: "include",

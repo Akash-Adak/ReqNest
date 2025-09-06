@@ -19,6 +19,7 @@ import {
 const ajv = new Ajv();
 
 export default function UploadSchema() {
+  const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const [name, setName] = useState("");
   const [schema, setSchema] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -63,7 +64,7 @@ export default function UploadSchema() {
       // console.log(existingApiName);
       setSelectedSchema(existingApiName);
       const response = await axios.get(
-        `http://localhost:8080/apis/${existingApiName.name}`,
+        `${baseUrl}/apis/${existingApiName.name}`,
         { withCredentials: true }
       );
       
@@ -129,7 +130,7 @@ export default function UploadSchema() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/schema/generate",
+        `${baseUrl}/api/schema/generate`,
         { prompt: aiPrompt }, 
         { headers: { "Content-Type": "application/json" } }
       );
@@ -230,7 +231,7 @@ export default function UploadSchema() {
       if (isUpdateMode && selectedSchema) {
         // Update existing schema
         const response = await axios.put(
-          `http://localhost:8080/apis/${selectedSchema.name}`,
+          `${baseUrl}/apis/${selectedSchema.name}`,
           { name, schemaJson: finalSchema },
           { withCredentials: true }
         );
@@ -242,7 +243,7 @@ export default function UploadSchema() {
       } else {
         // Create new schema
         const response = await axios.post(
-          "http://localhost:8080/apis",
+          `${baseUrl}/apis`,
           { name, schemaJson: finalSchema },
           { withCredentials: true }
         );

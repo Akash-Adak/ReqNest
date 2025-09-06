@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material';
 
 export default function Dashboard() {
+  const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -23,8 +24,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8080/api/user", { credentials: "include" }),
-      fetch("http://localhost:8080/api/user/stats", { credentials: "include" })
+      fetch(`${baseUrl}/api/user`, { credentials: "include" }),
+      fetch(`${baseUrl}/api/user/stats`, { credentials: "include" })
     ])
     .then(async ([userRes, statsRes]) => {
       if (userRes.status === 401) throw new Error("Unauthorized – Please log in");

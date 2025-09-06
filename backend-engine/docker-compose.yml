@@ -3,6 +3,7 @@ version: "3.9"
 services:
   backend:
     build: .
+    image: backend-engine:01
     container_name: backend-platform
     ports:
       - "8080:8080"

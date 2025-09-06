@@ -78,7 +78,7 @@ export default function ApiTesterTabs() {
   const [headersText, setHeadersText] = useState(`{
   "Content-Type": "application/json"
 }`);
-  const [baseUrl, setBaseUrl] = useState("http://localhost:8080");
+const [baseUrl, setBaseUrl] = useState(import.meta.env.VITE_API_URL);
   const [responses, setResponses] = useState({});
   const [busy, setBusy] = useState(false);
   const [requestBody, setRequestBody] = useState("{}");

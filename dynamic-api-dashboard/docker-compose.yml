@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: .
+    image: react-vite-frontend:01  # ✅ custom image tag
+    container_name: react-vite-frontend
+    ports:
+      - "5180:5173"                   # host:container
+    environment:
+      - VITE_API_URL=http://backend-platform:8080   # 👈 optional, set backend URL
+    networks:
+      - cloudnet
+      - default
+
+networks:
+  cloudnet:
+  default: {}
