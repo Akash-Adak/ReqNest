@@ -27,6 +27,7 @@
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.8.1",
+    "react-toastify": "^11.0.5",
     "swagger-ui-react": "^5.27.1"
   },
   "devDependencies": {

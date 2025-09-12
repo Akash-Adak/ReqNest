@@ -1,0 +1,41 @@
+# ==========================
+# Frontend Deployment & Service
+# ==========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: cloudnet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: akta2910/reqnest-frontend:03
+          ports:
+            - containerPort: 80
+          env:
+            # Point to backend service using internal Kubernetes DNS
+            - name: VITE_API_URL
+              value: "http://backend.cloudnet.svc.cluster.local:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: cloudnet
+spec:
+  type: NodePort   # For external access/testing; use LoadBalancer or Ingress in production
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+  selector:
+    app: frontend

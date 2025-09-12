@@ -3,11 +3,13 @@ version: "3.9"
 services:
   backend:
     build: .
+    image: akta2910/reqnest-backend:04
     container_name: backend-platform
     ports:
       - "8080:8080"
     env_file: .env
     environment:
+      SERVER_PORT: 8080   # <--- this sets Spring Boot port
       SPRING_DATASOURCE_URL: jdbc:mysql://${DB_HOST}:${DB_PORT:-3306}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
