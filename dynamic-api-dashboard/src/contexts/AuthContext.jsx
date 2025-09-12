@@ -9,6 +9,9 @@ const USER_EXPIRY_KEY = "user_expiry";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
 
 export const AuthProvider = ({ children }) => {
+const baseUrl = import.meta.env.VITE_API_URL;
+
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -97,7 +100,7 @@ export const AuthProvider = ({ children }) => {
   /** Starts login flow with OAuth2 provider */
   const login = (provider) => {
     handleLogoutCleanup();
-    window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+    window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
   /** Logs out backend + clears storage */

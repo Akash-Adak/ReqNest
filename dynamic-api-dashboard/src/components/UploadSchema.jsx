@@ -13,12 +13,17 @@ import {
   XMarkIcon,
   PlusIcon,
   TrashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  CodeBracketIcon,
+  CpuChipIcon,
+  RocketLaunchIcon,
+  ShieldCheckIcon
 } from "@heroicons/react/24/outline";
 
 const ajv = new Ajv();
 
 export default function UploadSchema() {
+ const baseUrl = import.meta.env.VITE_API_URL;
   const [name, setName] = useState("");
   const [schema, setSchema] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -35,9 +40,22 @@ export default function UploadSchema() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("manual"); // "manual" or "ai"
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
  
   const location = useLocation();
   const existingApiName = location.state?.existingApi;
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
   
   useEffect(() => {
     if (existingApiName) {
@@ -63,7 +81,7 @@ export default function UploadSchema() {
       // console.log(existingApiName);
       setSelectedSchema(existingApiName);
       const response = await axios.get(
-        `http://localhost:8080/apis/${existingApiName.name}`,
+        `${baseUrl}/apis/${existingApiName.name}`,
         { withCredentials: true }
       );
       
@@ -129,7 +147,7 @@ export default function UploadSchema() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/schema/generate",
+        `${baseUrl}/api/schema/generate`,
         { prompt: aiPrompt }, 
         { headers: { "Content-Type": "application/json" } }
       );
@@ -230,7 +248,7 @@ export default function UploadSchema() {
       if (isUpdateMode && selectedSchema) {
         // Update existing schema
         const response = await axios.put(
-          `http://localhost:8080/apis/${selectedSchema.name}`,
+          `${baseUrl}/apis/${selectedSchema.name}`,
           { name, schemaJson: finalSchema },
           { withCredentials: true }
         );
@@ -242,7 +260,7 @@ export default function UploadSchema() {
       } else {
         // Create new schema
         const response = await axios.post(
-          "http://localhost:8080/apis",
+          `${baseUrl}/apis`,
           { name, schemaJson: finalSchema },
           { withCredentials: true }
         );
@@ -394,48 +412,76 @@ export default function UploadSchema() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pt-4 pb-8">
-      {/* Accounting for navbar height */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+    <div className="min-h-screen bg-gray-900 pt-4 pb-8">
+      {/* Mouse follower */}
+      <div 
+        className="fixed w-4 h-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full pointer-events-none z-50 opacity-20 transition-all duration-100 ease-out blur-sm"
+        style={{
+          left: mousePosition.x - 8,
+          top: mousePosition.y - 8,
+        }}
+      />
+      
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-gray-900 to-pink-900/20"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,_rgba(120,_119,_198,_0.1),_transparent_50%)] bg-[radial-gradient(circle_at_80%_20%,_rgba(255,_105,_180,_0.1),_transparent_50%)]"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         
         {/* Header with mode indicator */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {isUpdateMode ? "Update API Schema" : "Upload New API Schema"}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {isUpdateMode 
-                ? "Modify your existing JSON Schema. Changes will be reflected in your API endpoints."
-                : "Create testable API endpoints by uploading JSON Schema definitions."}
-            </p>
+          <div className="flex items-center space-x-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl opacity-75 animate-pulse"></div>
+              <div className="relative w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-110 hover:rotate-12 transition-all duration-300">
+                <CodeBracketIcon className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            
+            <div>
+              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-pink-200">
+                {isUpdateMode ? "Update API Schema" : "Upload New API Schema"}
+              </h1>
+              <p className="text-gray-400 text-lg leading-relaxed mt-2 max-w-3xl">
+                {isUpdateMode 
+                  ? "Modify your existing JSON Schema. Changes will be reflected in your API endpoints."
+                  : "Create testable API endpoints by uploading JSON Schema definitions."}
+              </p>
+            </div>
           </div>
           
-          <div className={`px-4 py-2 rounded-full flex items-center ${isUpdateMode ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-            <div className={`w-2 h-2 rounded-full mr-2 ${isUpdateMode ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-            <span className="text-sm font-medium">
+          <div className={`px-6 py-3 rounded-2xl flex items-center backdrop-blur-sm shadow-lg border ${isUpdateMode ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-blue-500/30 text-blue-200' : 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30 text-green-200'}`}>
+            <div className={`w-3 h-3 rounded-full mr-3 animate-pulse ${isUpdateMode ? 'bg-blue-400' : 'bg-green-400'}`}></div>
+            <span className="text-sm font-bold">
               {isUpdateMode ? 'Update Mode' : 'Upload Mode'}
             </span>
           </div>
         </div>
         
-        <div className="flex gap-2 mb-4">
+        {/* Mode Toggle */}
+        <div className="flex gap-3 mb-6">
           <button
             type="button"
             onClick={() => setFormMode(false)}
-            className={`px-3 py-1 rounded-md ${
-              !formMode ? "bg-blue-600 text-white" : "bg-gray-200"
+            className={`group px-6 py-3 rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm border ${
+              !formMode 
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-500/50 shadow-lg shadow-purple-500/25" 
+                : "bg-gray-800/50 text-gray-300 hover:text-white hover:bg-white/10 border-gray-700/50"
             }`}
           >
+            <CodeBracketIcon className="w-5 h-5 inline mr-2 group-hover:scale-110 transition-transform" />
             JSON Mode
           </button>
           <button
             type="button"
             onClick={() => setFormMode(true)}
-            className={`px-3 py-1 rounded-md ${
-              formMode ? "bg-blue-600 text-white" : "bg-gray-200"
+            className={`group px-6 py-3 rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm border ${
+              formMode 
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-500/50 shadow-lg shadow-purple-500/25" 
+                : "bg-gray-800/50 text-gray-300 hover:text-white hover:bg-white/10 border-gray-700/50"
             }`}
           >
+            <PencilSquareIcon className="w-5 h-5 inline mr-2 group-hover:scale-110 transition-transform" />
             Form Mode
           </button>
         </div>
@@ -443,62 +489,65 @@ export default function UploadSchema() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Form Section */}
           <div className="w-full lg:w-2/3">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-              <div className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-purple-500/20 overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-3xl"></div>
+              
+              <div className="relative p-8">
+                <form onSubmit={handleSubmit} className="space-y-8">
                   {/* API Name Field */}
                   <div>
-                    <label htmlFor="apiName" className="block text-sm font-medium text-gray-700 mb-2">
-                      API Name <span className="text-red-500">*</span>
+                    <label htmlFor="apiName" className="block text-lg font-bold text-white mb-4">
+                      API Name <span className="text-pink-400">*</span>
                     </label>
                     <input
                       id="apiName"
                       type="text"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      className="w-full px-6 py-4 bg-gray-900/50 border border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-white placeholder-gray-400 backdrop-blur-sm"
                       placeholder="e.g., UserProfileAPI, ProductCatalog"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                     />
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-3 text-sm text-gray-400">
                       Choose a descriptive name that identifies your API
                     </p>
                   </div>
 
                   {/* Schema Input Tabs */}
                   <div>
-                    <div className="flex border-b border-gray-200 mb-4">
+                    <div className="flex border-b border-gray-700/50 mb-6">
                       <button
                         type="button"
                         onClick={() => setActiveTab("manual")}
-                        className={`py-2 px-4 font-medium text-sm ${activeTab === "manual" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`py-3 px-6 font-bold text-sm transition-all duration-300 ${activeTab === "manual" ? "border-b-2 border-purple-500 text-purple-400" : "text-gray-400 hover:text-white"}`}
                       >
                         Manual Schema Input
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveTab("ai")}
-                        className={`py-2 px-4 font-medium text-sm ${activeTab === "ai" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`py-3 px-6 font-bold text-sm transition-all duration-300 ${activeTab === "ai" ? "border-b-2 border-purple-500 text-purple-400" : "text-gray-400 hover:text-white"}`}
                       >
+                        <SparklesIcon className="w-4 h-4 inline mr-2" />
                         AI Schema Generator
                       </button>
                     </div>
 
                     {activeTab === "ai" ? (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div>
-                          <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-700 mb-2">
+                          <label htmlFor="aiPrompt" className="block text-lg font-bold text-white mb-4">
                             Describe Your API
                           </label>
                           <textarea
                             id="aiPrompt"
                             rows={4}
-                            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                            className="w-full p-6 bg-gray-900/50 border border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-white placeholder-gray-400 backdrop-blur-sm"
                             placeholder="Describe the API you want to create. For example: 'Create a login API with username, password, and remember me fields'"
                             value={aiPrompt}
                             onChange={(e) => setAiPrompt(e.target.value)}
                           />
-                          <p className="mt-2 text-sm text-gray-500">
+                          <p className="mt-3 text-sm text-gray-400">
                             Be as specific as possible for better results
                           </p>
                         </div>
@@ -506,16 +555,16 @@ export default function UploadSchema() {
                           type="button"
                           onClick={generateSchemaWithAI}
                           disabled={aiLoading}
-                          className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                          className="group flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-purple-400 disabled:to-pink-400 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transform hover:-translate-y-1"
                         >
                           {aiLoading ? (
                             <>
-                              <ArrowPathIcon className="h-5 w-5 animate-spin" />
-                              Generating...
+                              <ArrowPathIcon className="h-6 w-6 animate-spin" />
+                              Generating Schema...
                             </>
                           ) : (
                             <>
-                              <SparklesIcon className="h-5 w-5" />
+                              <SparklesIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
                               Generate Schema with AI
                             </>
                           )}
@@ -523,76 +572,79 @@ export default function UploadSchema() {
                       </div>
                     ) : formMode ? (
                       <div>
-                        <div className="flex justify-between items-center mb-3">
-                          <h3 className="text-sm font-medium">Schema Fields</h3>
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-bold text-white">Schema Fields</h3>
                           <button
                             type="button"
                             onClick={addField}
-                            className="flex items-center gap-1 text-blue-600 text-sm"
+                            className="group flex items-center gap-2 text-purple-400 hover:text-white text-sm font-semibold transition-colors"
                           >
-                            <PlusIcon className="h-4 w-4" /> Add Field
+                            <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" /> Add Field
                           </button>
                         </div>
 
                         {/* Form fields for schema creation */}
-                        {fields.map((field, idx) => (
-                          <div key={idx} className="flex items-center gap-2 mb-2">
-                            <input
-                              placeholder="Field name"
-                              className="px-2 py-1 border rounded w-1/5"
-                              value={field.name}
-                              onChange={(e) => updateField(idx, "name", e.target.value)}
-                            />
-                            <select
-                              value={field.type}
-                              onChange={(e) => updateField(idx, "type", e.target.value)}
-                              className="px-2 py-1 border rounded"
-                            >
-                              <option value="string">string</option>
-                              <option value="number">number</option>
-                              <option value="integer">integer</option>
-                              <option value="boolean">boolean</option>
-                              <option value="array">array</option>
-                              <option value="object">object</option>
-                            </select>
-                            <input
-                              placeholder="Description"
-                              className="px-2 py-1 border rounded flex-1"
-                              value={field.description}
-                              onChange={(e) =>
-                                updateField(idx, "description", e.target.value)
-                              }
-                            />
-                            <label className="flex items-center gap-1 text-sm">
+                        <div className="space-y-4">
+                          {fields.map((field, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-4 bg-gray-900/50 border border-gray-700/50 rounded-2xl backdrop-blur-sm">
                               <input
-                                type="checkbox"
-                                checked={requiredFields.includes(field.name)}
-                                onChange={() => toggleRequired(field.name)}
+                                placeholder="Field name"
+                                className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 transition-all"
+                                value={field.name}
+                                onChange={(e) => updateField(idx, "name", e.target.value)}
                               />
-                              Required
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => removeField(idx)}
-                              className="text-red-500"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ))}
+                              <select
+                                value={field.type}
+                                onChange={(e) => updateField(idx, "type", e.target.value)}
+                                className="px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-purple-500 transition-all"
+                              >
+                                <option value="string">string</option>
+                                <option value="number">number</option>
+                                <option value="integer">integer</option>
+                                <option value="boolean">boolean</option>
+                                <option value="array">array</option>
+                                <option value="object">object</option>
+                              </select>
+                              <input
+                                placeholder="Description"
+                                className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 transition-all"
+                                value={field.description}
+                                onChange={(e) =>
+                                  updateField(idx, "description", e.target.value)
+                                }
+                              />
+                              <label className="flex items-center gap-2 text-sm text-gray-300">
+                                <input
+                                  type="checkbox"
+                                  checked={requiredFields.includes(field.name)}
+                                  onChange={() => toggleRequired(field.name)}
+                                  className="rounded focus:ring-purple-500 text-purple-500"
+                                />
+                                Required
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => removeField(idx)}
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       /* JSON Schema Field */
                       <div>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-                          <label htmlFor="jsonSchema" className="text-sm font-medium text-gray-700 mb-2 sm:mb-0">
-                            JSON Schema <span className="text-red-500">*</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                          <label htmlFor="jsonSchema" className="text-lg font-bold text-white mb-3 sm:mb-0">
+                            JSON Schema <span className="text-pink-400">*</span>
                           </label>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-3">
                             <button
                               type="button"
                               onClick={toggleExample}
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-blue-400 hover:text-white hover:bg-white/10 rounded-xl transition-all backdrop-blur-sm border border-blue-500/30"
                             >
                               <LightBulbIcon className="h-4 w-4" />
                               {exampleVisible ? 'Hide Example' : 'Show Example'}
@@ -601,7 +653,7 @@ export default function UploadSchema() {
                               <button
                                 type="button"
                                 onClick={copyExample}
-                                className="flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded-md transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 text-sm text-green-400 hover:text-white hover:bg-white/10 rounded-xl transition-all backdrop-blur-sm border border-green-500/30"
                               >
                                 <DocumentDuplicateIcon className="h-4 w-4" />
                                 {copied ? 'Copied!' : 'Copy'}
@@ -611,7 +663,7 @@ export default function UploadSchema() {
                               <button
                                 type="button"
                                 onClick={resetForm}
-                                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all backdrop-blur-sm border border-gray-600/30"
                               >
                                 <XMarkIcon className="h-4 w-4" />
                                 Cancel
@@ -623,9 +675,9 @@ export default function UploadSchema() {
                         <div className="relative">
                           <textarea
                             id="jsonSchema"
-                            rows={14}
-                            className={`w-full p-4 border font-mono text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                              !isValidJson && schema ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            rows={16}
+                            className={`w-full p-6 font-mono text-sm rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 backdrop-blur-sm ${
+                              !isValidJson && schema ? 'border-red-500/50 bg-red-900/20 text-red-200' : 'border-gray-700/50 bg-gray-900/50 text-gray-100'
                             }`}
                             placeholder='Paste your JSON Schema here (e.g., { "type": "object", "properties": { ... } })'
                             value={schema}
@@ -633,15 +685,15 @@ export default function UploadSchema() {
                             required={!formMode}
                           />
                           {!isValidJson && schema && (
-                            <div className="absolute top-3 right-3 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                              <ExclamationTriangleIcon className="h-3 w-3" />
+                            <div className="absolute top-4 right-4 bg-red-500/20 border border-red-500/30 text-red-200 px-4 py-2 rounded-xl text-xs flex items-center gap-2 backdrop-blur-sm">
+                              <ExclamationTriangleIcon className="h-4 w-4" />
                               Invalid JSON
                             </div>
                           )}
                         </div>
                         
-                        <div className="mt-3 flex items-center text-sm text-gray-500">
-                          <SparklesIcon className="h-4 w-4 mr-1 text-blue-500" />
+                        <div className="mt-4 flex items-center text-sm text-gray-400">
+                          <SparklesIcon className="h-4 w-4 mr-2 text-purple-400" />
                           Supports all JSON Schema draft versions
                         </div>
                       </div>
@@ -649,27 +701,27 @@ export default function UploadSchema() {
                   </div>
 
                   {/* Submit Button */}
-                  <div className="pt-4">
+                  <div className="pt-6">
                     <button
                       type="submit"
                       disabled={loading || (!formMode && !isValidJson)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3"
+                      className="group w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transform hover:-translate-y-1 disabled:transform-none disabled:shadow-none"
                     >
                       {loading ? (
                         <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                           {isUpdateMode ? 'Updating Schema...' : 'Uploading Schema...'}
                         </>
                       ) : (
                         <>
                           {isUpdateMode ? (
                             <>
-                              <PencilSquareIcon className="h-5 w-5" />
+                              <PencilSquareIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
                               Update API Schema
                             </>
                           ) : (
                             <>
-                              <ArrowUpTrayIcon className="h-5 w-5" />
+                              <ArrowUpTrayIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
                               Upload API Schema
                             </>
                           )}
@@ -681,22 +733,22 @@ export default function UploadSchema() {
 
                 {/* Message Display */}
                 {message.text && (
-                  <div className={`mt-6 p-4 rounded-lg border ${
+                  <div className={`mt-8 p-6 rounded-2xl border backdrop-blur-sm ${
                     message.type === "error" 
-                      ? 'bg-red-50 border-red-200 text-red-800' 
+                      ? 'bg-red-900/50 border-red-500/30 text-red-200' 
                       : message.type === "success"
-                      ? 'bg-green-50 border-green-200 text-green-800'
-                      : 'bg-blue-50 border-blue-200 text-blue-800'
+                      ? 'bg-green-900/50 border-green-500/30 text-green-200'
+                      : 'bg-blue-900/50 border-blue-500/30 text-blue-200'
                   }`}>
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       {message.type === "error" ? (
-                        <ExclamationTriangleIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <ExclamationTriangleIcon className="h-6 w-6 mt-1 flex-shrink-0" />
                       ) : message.type === "success" ? (
-                        <CheckCircleIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <CheckCircleIcon className="h-6 w-6 mt-1 flex-shrink-0" />
                       ) : (
-                        <LightBulbIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <LightBulbIcon className="h-6 w-6 mt-1 flex-shrink-0" />
                       )}
-                      <div className="text-sm break-words">
+                      <div className="text-sm font-medium break-words">
                         {message.text}
                       </div>
                     </div>
@@ -706,35 +758,39 @@ export default function UploadSchema() {
             </div>
 
             {/* Quick Tips */}
-            <div className="mt-6 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <LightBulbIcon className="h-5 w-5 text-yellow-500" />
+            <div className="mt-8 bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-purple-500/20 p-8 shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-3xl"></div>
+              
+              <h3 className="relative text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <LightBulbIcon className="h-6 w-6 text-white" />
+                </div>
                 Schema Design Tips
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-semibold text-blue-600">1</span>
+              <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-xs font-bold text-white">1</span>
                   </div>
-                  <p>Use descriptive property names and descriptions for better documentation</p>
+                  <p className="font-medium">Use descriptive property names and descriptions for better documentation</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-semibold text-blue-600">2</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-xs font-bold text-white">2</span>
                   </div>
-                  <p>Include required fields to ensure data integrity in your API</p>
+                  <p className="font-medium">Include required fields to ensure data integrity in your API</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-semibold text-blue-600">3</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-xs font-bold text-white">3</span>
                   </div>
-                  <p>Add enum values for fields with limited possible values</p>
+                  <p className="font-medium">Add enum values for fields with limited possible values</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-semibold text-blue-600">4</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-xs font-bold text-white">4</span>
                   </div>
-                  <p>Test your schema with online validators before uploading</p>
+                  <p className="font-medium">Test your schema with online validators before uploading</p>
                 </div>
               </div>
             </div>
@@ -742,56 +798,54 @@ export default function UploadSchema() {
           
           {/* Info Sidebar */}
           <div className="w-full lg:w-1/3">
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 sticky top-24">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <SparklesIcon className="h-5 w-5 text-blue-500" />
+            <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-purple-500/20 p-8 shadow-2xl sticky top-24">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-3xl"></div>
+              
+              <h3 className="relative text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <SparklesIcon className="h-6 w-6 text-white" />
+                </div>
                 {isUpdateMode ? "About Schema Updates" : "About Schema Upload"}
               </h3>
               
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+              <div className="relative space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/30 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                    <ShieldCheckIcon className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 mb-1">JSON Schema Validation</h4>
-                    <p className="text-sm text-gray-600">Automatic validation using AJV with comprehensive error reporting</p>
+                    <h4 className="font-bold text-white mb-2">JSON Schema Validation</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Automatic validation using AJV with comprehensive error reporting</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                    <RocketLaunchIcon className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 mb-1">Instant API Creation</h4>
-                    <p className="text-sm text-gray-600">Get working endpoints immediately after schema upload</p>
+                    <h4 className="font-bold text-white mb-2">Instant API Creation</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Get working endpoints immediately after schema upload</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                    <CpuChipIcon className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 mb-1">AI Schema Generation</h4>
-                    <p className="text-sm text-gray-600">Describe your API in natural language and let AI generate the schema</p>
+                    <h4 className="font-bold text-white mb-2">AI Schema Generation</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Describe your API in natural language and let AI generate the schema</p>
                   </div>
                 </div>
                 
                 {isUpdateMode && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
-                    <h4 className="font-medium text-yellow-800 mb-1 flex items-center gap-2">
-                      <ExclamationTriangleIcon className="h-4 w-4" />
+                  <div className="bg-gradient-to-r from-yellow-900/50 to-amber-900/50 border border-yellow-500/30 rounded-2xl p-6 mt-6 backdrop-blur-sm">
+                    <h4 className="font-bold text-yellow-200 mb-3 flex items-center gap-2">
+                      <ExclamationTriangleIcon className="h-5 w-5" />
                       Update Notice
                     </h4>
-                    <p className="text-sm text-yellow-700">
+                    <p className="text-sm text-yellow-300 leading-relaxed">
                       Updating a schema will affect all existing endpoints. Make sure to test your changes thoroughly.
                     </p>
                   </div>

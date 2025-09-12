@@ -80,7 +80,7 @@ public class UserService {
                 "• **Check out the Docs:** Learn how to get the most out of ReqNest's features.\n\n" +
 
                 "If you have any questions, our support team is happy to assist.\n" +
-                "\uD83D\uDC49 Email us at: support@reqnest.com\n\n" +
+                "\uD83D\uDC49 Email us at: reqnest@gmail.com\n\n" +
 
                 "Thank you for joining us. We're excited to see what you build!\n\n" +
 

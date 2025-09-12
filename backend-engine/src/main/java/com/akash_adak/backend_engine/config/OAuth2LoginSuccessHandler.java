@@ -4,6 +4,7 @@ import com.akash_adak.backend_engine.model.User;
 import com.akash_adak.backend_engine.repository.UserRepository;
 import com.akash_adak.backend_engine.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -32,6 +34,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     private RedisService redisService;
 
+    @Value("${app.frontend-url}")
+    private String frontendApi;
+
+    @Value("${app.secure-cookie:true}")
+    private boolean secureCookie;
+
     public OAuth2LoginSuccessHandler(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
@@ -42,26 +50,29 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication) throws IOException, ServletException {
 
         OAuth2User principal = (OAuth2User) authentication.getPrincipal();
+
+        // Log all OAuth2 attributes for debugging
+        System.out.println("OAuth2 attributes: " + principal.getAttributes());
+
         String email = principal.getAttribute("email");
-
-
-        Map<String, Object> existingSession = redisService.get("JWT_SESSION:" + email, Map.class);
-        if (existingSession != null) {
-            String token = (String) existingSession.get("token");
-
-            Cookie cookie = new Cookie("JWT_TOKEN", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false);
-            cookie.setPath("/");
-            cookie.setMaxAge(7 * 24 * 60 * 60);
-            response.addCookie(cookie);
-
-            System.out.println("Existing session found in Redis, cookie reissued for: " + email);
-            response.sendRedirect("http://localhost:5173");
-            return;
+        if (email == null) {
+            throw new IllegalStateException("OAuth2 provider did not return email");
         }
 
+        // Check existing session in Redis
+        try {
+            Map<String, Object> existingSession = redisService.get("JWT_SESSION:" + email, Map.class);
+            if (existingSession != null) {
+                String token = (String) existingSession.get("token");
+                addJwtCookie(response, token);
+                redirectToFrontend(response, "");
+                return;
+            }
+        } catch (Exception e) {
+            System.err.println("Redis session check failed: " + e.getMessage());
+        }
 
+        // Extract user info from OAuth2
         String name = principal.getAttribute("name");
         String picture = principal.getAttribute("picture");
         String login = principal.getAttribute("login");
@@ -69,6 +80,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String provider = login != null ? "github" : "google";
 
+        // Fetch or create user
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
@@ -83,10 +95,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        // 🔑 Generate new token
+        // Generate JWT token
         String token = jwtUtil.generateToken(email);
 
-        // 📌 Build session object
+        // Save session in Redis (optional, non-blocking)
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("token", token);
         sessionData.put("email", email);
@@ -94,23 +106,41 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         sessionData.put("picture", user.getPicture());
         sessionData.put("provider", user.getProvider());
 
-        // 💾 Save to Redis with TTL (7 days)
-        redisService.set("JWT_SESSION:" + email, sessionData, 7 * 24 * 60 * 60);
+        try {
+            redisService.set("JWT_SESSION:" + email, sessionData, 7 * 24 * 60 * 60);
+        } catch (Exception e) {
+            System.err.println("Failed to save session in Redis: " + e.getMessage());
+        }
 
-        // 🍪 Set cookie
-        Cookie cookie = new Cookie("JWT_TOKEN", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(cookie);
+        // Add JWT cookie
+        addJwtCookie(response, token);
 
-        System.out.println("New session created in Redis for user: " + email);
-        response.sendRedirect("http://localhost:5173?login=success&provider=" + provider);
-
+        // Redirect to frontend
+        String queryParams = "?login=success&provider=" + URLEncoder.encode(provider, StandardCharsets.UTF_8);
+        redirectToFrontend(response, queryParams);
     }
 
-    public  String generateApiKey(String email) {
+    private void addJwtCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie("JWT_TOKEN", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(secureCookie); // true only if frontend uses HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+
+        // Set domain only for production
+        if (!frontendApi.contains("localhost")) {
+            cookie.setDomain("reqnest.com");
+        }
+
+        response.addCookie(cookie);
+    }
+
+    private void redirectToFrontend(HttpServletResponse response, String queryParams) throws IOException {
+        String redirectUrl = frontendApi + queryParams;
+        response.sendRedirect(redirectUrl);
+    }
+
+    private String generateApiKey(String email) {
         try {
             String input = email + System.currentTimeMillis() + getRandomSalt();
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -121,12 +151,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private  String getRandomSalt() {
+    private String getRandomSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
         random.nextBytes(salt);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(salt);
     }
-
-
 }

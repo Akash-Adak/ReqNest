@@ -97,6 +97,7 @@ const Sidebar = ({ activeTab, setActiveTab, apiName, status, environment, isSide
 
 // Main Content Component
 export default function ApiDetails() {
+ const baseUrl = import.meta.env.VITE_API_URL;
   const { apiName } = useParams();
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
