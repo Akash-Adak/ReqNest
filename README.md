@@ -1,149 +1,208 @@
 
-# 📦 ReqNest – Dynamic API Platform
+# ReqNest – Cloud API Platform
 
-> **ReqNest** is a cloud-ready API platform that lets you **define APIs dynamically**, manage them through a modern dashboard, and consume them instantly using an auto-generated SDK.
-> It combines a **Spring Boot backend**, a **React dashboard**, and a lightweight **JavaScript SDK** for seamless integration.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Overview
+
+**ReqNest** is a **cloud-native API platform** that allows developers and non-developers to **generate backend APIs automatically** without writing traditional backend code.  
+
+With ReqNest, users can:  
+- Create **database schemas** via **AI-assisted**, **manual**, or **form-based** methods.  
+- **Test APIs in-browser** like Postman.  
+- **Download or update schemas** dynamically.  
+- Generate **SDKs** for frontend integration – no backend coding required.  
+
+The platform also provides **OAuth2 login** with **Google** and **GitHub**, **dynamic dashboards**, **profile management**, and full **CRUD operations** for multiple databases.  
 
 ---
 
-## 🚀 Features
+## Key Features
 
-* **Dynamic API Creation** – Define new APIs and schemas without redeploying backend.
-* **SDK Auto-Generation** – Instantly get an NPM package (`reqnest-sdk`) to interact with your APIs.
-* **Dashboard UI** – React + Tailwind + Vite based dashboard for managing APIs.
-* **Secure Access** – API key–based authentication (JWT / future OAuth).
-* **Extensible** – Backend built with Spring Boot, frontend in React, SDK in pure JS.
+- **Schema & API Generation**
+  - AI-assisted schema creation.
+  - Form-based or manual schema entry.
+  - Auto-generated REST APIs for all operations.
+  
+- **API Testing**
+  - Built-in testing like Postman.
+  - Save & test endpoints directly from the platform.
+
+- **SDK Generation**
+  - Frontend SDKs to integrate APIs without backend code.
+
+- **Authentication & Security**
+  - OAuth2 login (Google, GitHub).
+  - JWT-based API security.
+
+- **Dynamic Dashboard & Profile**
+  - View all APIs and their usage.
+  - Manage projects and user profile easily.
+
+- **Database Support**
+  - MySQL for relational data.
+  - MongoDB for NoSQL data.
+  - Redis for caching and token storage.
+
+- **Tech Stack**
+  - Backend: Spring Boot
+  - Frontend: React + Vite
+  - Containerization: Docker
+  - Orchestration: Kubernetes
+  - Messaging & Caching: Kafka, Redis
 
 ---
 
-## 🏗️ Project Structure
+## Architecture Overview
 
 ```
-ReqNest/
-│── backend-engine/        # Spring Boot backend (API engine + schema manager)
-│── dynamic-api-dashboard/ # React frontend for API management
-│── sdk/                   # ReqNest JavaScript SDK (npm package)
-│── README.md              # Project documentation (this file)
-```
+
+User
+├─> ReqNest Frontend (React + Vite)
+│      ├─ OAuth2 Login (Google/GitHub)
+│      ├─ Dynamic Dashboard
+│      └─ API Testing / SDK Integration
+│
+└─> ReqNest Backend (Spring Boot Microservices)
+├─ Schema Management Service (MySQL/MongoDB)
+├─ API Generation Service
+├─ SDK Service
+├─ Auth Service (OAuth2 + JWT)
+└─ Cache & Messaging (Redis + Kafka)
+
+````
 
 ---
 
-## 🔧 Tech Stack
+## Tech Stack
 
-* **Backend**: Java, Spring Boot, MySQL, Kafka (future integration)
-* **Frontend**: React, Vite, Tailwind CSS
-* **SDK**: Node.js, ES Modules, NPM package publishing
-* **Infra (planned)**: Docker, Kubernetes, Redis, AWS
+- **Frontend:** React + Vite  
+- **Backend:** Spring Boot (Java 17)  
+- **Databases:** MySQL, MongoDB, Redis  
+- **Messaging:** Kafka  
+- **Authentication:** OAuth2 (Google, GitHub), JWT  
+- **Containerization:** Docker  
+- **Orchestration:** Kubernetes  
+- **Monitoring:** Prometheus & Grafana (optional)  
 
 ---
 
-## ⚡ Getting Started
+## Getting Started
 
-### 1. Clone the repo
+### Option 1: Run via Docker Hub
+
+You can try ReqNest immediately using our pre-built Docker image:
 
 ```bash
-git clone https://github.com/Akash-Adak/ReqNest.git
-cd ReqNest
-```
+# Pull the latest image
+docker pull akashadak/reqnest:latest
 
-### 2. Setup Backend
+# Run the container
+docker run -p 5173:5173 -p 8080:8080 akashadak/reqnest:latest
+````
+
+* Frontend: `http://localhost:5173`
+* Backend APIs: `http://localhost:8080`
+
+> You now have a fully functional ReqNest instance running locally without building it from source.
+
+---
+
+### Option 2: Run Locally (From Source)
+
+1. Clone the repo:
 
 ```bash
-cd backend-engine
-./mvnw spring-boot:run
+git clone https://github.com/akashadak/reqnest.git
+cd reqnest
 ```
 
-Backend will run on **`http://localhost:8080`**.
-It handles API definitions, schema storage, and request processing.
-
-### 3. Setup Frontend Dashboard
+2. Build backend:
 
 ```bash
-cd ../dynamic-api-dashboard
+cd backend
+./mvnw clean install
+```
+
+3. Build frontend:
+
+```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Frontend will run on **`http://localhost:5173`**.
-Login → Manage APIs → View schema.
-
-### 4. Install SDK (for client apps)
+4. Start Docker services:
 
 ```bash
-npm install reqnest-sdk
+docker-compose up -d
 ```
 
 ---
 
-## 📦 SDK Usage
+### Kubernetes Deployment
 
-```javascript
-import ReqNestSDK from "reqnest-sdk";
+1. Apply namespace:
 
-// Initialize SDK
-const sdk = new ReqNestSDK({
-  baseUrl: "http://localhost:8080"
-});
+```bash
+kubectl apply -f k8s/namespace.yaml
+```
 
-// Set API key explicitly
-sdk.setApiKey("YOUR_API_KEY");
+2. Apply secrets:
 
-// Use a schema (example: users)
-const usersApi = sdk.schema("users");
+```bash
+kubectl apply -f k8s/secrets.yaml
+```
 
-// Example CRUD
-await usersApi.create({ name: "Akash", email: "akash@example.com" });
+3. Deploy databases (MySQL, MongoDB, Redis):
 
-const list = await usersApi.list();
-console.log("Users:", list);
+```bash
+kubectl apply -f k8s/databases.yaml
+```
 
-await usersApi.update({ id: list[0].id, name: "Updated Name" });
+4. Deploy backend and frontend:
 
-await usersApi.delete({ id: list[0].id });
+```bash
+kubectl apply -f k8s/deployments/
+```
+
+5. Deploy ingress:
+
+```bash
+kubectl apply -f k8s/ingress.yaml
+```
+
+6. Verify:
+
+```bash
+kubectl get pods -n reqnest
+kubectl get svc -n reqnest
 ```
 
 ---
 
-## 🖥️ Dashboard Preview
+## Contributing
 
-| Dashboard                                                        | API Schema                                                 | SDK Docs                                             |
-| ---------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------- |
-| ![Dashboard](https://via.placeholder.com/300x200?text=Dashboard) | ![Schema](https://via.placeholder.com/300x200?text=Schema) | ![SDK](https://via.placeholder.com/300x200?text=SDK) |
-
-*(Replace placeholders with real screenshots once ready)*
-
----
-
-## 🔮 Roadmap
-
-* [ ] Role-based access & authentication
-* [ ] Schema versioning & rollback
-* [ ] Kafka integration for async events
-* [ ] Docker & Kubernetes deployment
-* [ ] CI/CD setup with GitHub Actions
-* [ ] Advanced analytics in dashboard
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/xyz`)
+3. Commit your changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/xyz`)
+5. Open a Pull Request
 
 ---
 
-## 🤝 Contributing
+## License
 
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/YourFeature`)
-3. Commit changes (`git commit -m 'Add YourFeature'`)
-4. Push branch (`git push origin feature/YourFeature`)
-5. Create a Pull Request
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📜 License
+## Contact
 
-MIT License © 2025 [Akash Adak](https://github.com/Akash-Adak)
+**Akash Adak**
 
----
+* GitHub: [https://github.com/akashadak](https://github.com/akashadak)
+* Email: [akashadak@example.com](mailto:akashadak@example.com)
 
-## 📬 Contact
+```
 
-* GitHub: [@Akash-Adak](https://github.com/Akash-Adak)
-* Email: *(add your contact here if you want)*
-
----
