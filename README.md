@@ -95,10 +95,84 @@ You can try ReqNest immediately using our pre-built Docker image:
 
 ```bash
 # Pull the latest image
-docker pull akashadak/reqnest:latest
+docker pull akta2910/reqnest:latest
 
 # Run the container
-docker run -p 5173:5173 -p 8080:8080 akashadak/reqnest:latest
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    image:  akta2910/reqnest-backend:latest
+    container_name: backend-platform
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      SERVER_PORT: 8080   # <--- this sets Spring Boot port
+      SPRING_DATASOURCE_URL: jdbc:mysql://${DB_HOST}:${DB_PORT:-3306}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      SPRING_DATA_MONGODB_URI: ${MONGO_URI}
+      SPRING_REDIS_HOST: ${REDIS_HOST}
+      SPRING_REDIS_PORT: ${REDIS_PORT}
+      SPRING_REDIS_USERNAME: ${REDIS_USER}
+      SPRING_REDIS_PASSWORD: ${REDIS_PASS}
+    depends_on:
+      - mysql
+      - mongo
+      - redis
+    networks:
+      - cloudnet
+      - default   # ✅ add access to external internet
+    dns:          # ✅ force reliable DNS for Gmail
+      - 8.8.8.8
+      - 8.8.4.4
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3307:3306"
+    networks:
+      - cloudnet
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - cloudnet
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - cloudnet
+    volumes:
+      - redis_data:/data
+
+networks:
+  cloudnet:
+  default: {}   # ✅ enable internet + external DNS
+
+volumes:
+  mysql_data:
+  mongo_data:
+  redis_data:
 ````
 
 * Frontend: `http://localhost:5173`
