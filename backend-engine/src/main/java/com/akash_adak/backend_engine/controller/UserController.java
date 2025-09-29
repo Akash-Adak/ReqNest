@@ -36,6 +36,14 @@ public class UserController {
 
         try {
             String email = (String) principal.getAttributes().get("email");
+            try {
+                Map<String, Object> existingSession = redisService.get("JWT_SESSION:" + email, Map.class);
+                if (existingSession != null) {
+               return ResponseEntity.ok(existingSession);
+                }
+            } catch (Exception e) {
+                System.err.println("Redis session check failed: " + e.getMessage());
+            }
 
             User user = userService.createOrUpdateUser(principal.getAttributes());
 
