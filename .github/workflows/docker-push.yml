@@ -15,24 +15,27 @@ jobs:
         include:
           - service: backend-engine
             image: reqnest-backend
+            dockerfile: backend-engine/Dockerfile
           - service: dynamic-api-dashboard
             image: reqnest-frontend
-         ]
+            dockerfile: dynamic-api-dashboard/Dockerfile
 
     steps:
       # Step 1: Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up JDK 17 for Maven build
+      # Step 2: Set up JDK 17 for Maven build (only for backend)
       - name: Set up JDK 17
+        if: matrix.service == 'backend-engine'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Build all microservices JARs
+      # Step 3: Build backend JAR (only for backend service)
       - name: Build with Maven
+        if: matrix.service == 'backend-engine'
         run: mvn -B clean package -DskipTests
 
       # Step 4: Set up Docker Buildx
@@ -46,18 +49,25 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 6: Get short commit SHA (for tagging)
-      - name: Get short commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      # Step 6: Extract metadata for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-,format=short
+            type=raw,value=latest
 
-      # Step 7: Build and push Docker images for each service
+      # Step 7: Build and push Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.service }}
-          file: ./${{ matrix.service }}/Dockerfile
+          context: .
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image }}:${{ env.sha_short }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
