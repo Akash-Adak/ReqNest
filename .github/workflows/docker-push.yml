@@ -16,9 +16,11 @@ jobs:
           - service: backend-engine
             image: reqnest-backend
             dockerfile: backend-engine/Dockerfile
+            context: .
           - service: dynamic-api-dashboard
             image: reqnest-frontend
             dockerfile: dynamic-api-dashboard/Dockerfile
+            context: ./dynamic-api-dashboard
 
     steps:
       # Step 1: Checkout code
@@ -36,6 +38,7 @@ jobs:
       # Step 3: Build backend JAR (only for backend service)
       - name: Build with Maven
         if: matrix.service == 'backend-engine'
+        working-directory: ./backend-engine
         run: mvn -B clean package -DskipTests
 
       # Step 4: Set up Docker Buildx
@@ -64,7 +67,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
