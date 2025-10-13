@@ -1,18 +1,26 @@
 # Build stage
-FROM node:20-alpine as build
+FROM node:20-alpine AS builder
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-COPY . .
+
+# Copy package files
+COPY dynamic-api-dashboard/package*.json ./
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy source code
+COPY dynamic-api-dashboard/ .
+
+# Build the application
 RUN npm run build
 
-# Nginx stage
-FROM nginx:1.27-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+# Production stage
+FROM nginx:alpine
 
-# Add entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy built application
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
-ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["nginx", "-g", "daemon off;"]
