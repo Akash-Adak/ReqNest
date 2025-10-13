@@ -13,7 +13,7 @@ target/
 .springBeans
 .sts4-cache
 .env
-k8s.yml
+#k8s.yml
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -32,3 +32,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+
