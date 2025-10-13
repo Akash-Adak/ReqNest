@@ -47,9 +47,13 @@ export default function ApiList() {
     setLoading(true);
     setError(null);
     axios
-        .get(`{baseUrl/apis`, { withCredentials: true })
-      .then((res) => setApis(res.data))
-      .catch((err) => setError(err.response?.data?.error || err.message))
+      .get(`${baseUrl}/apis`, { withCredentials: true })
+      .then((res) => setApis(res.data || [])) // Ensure it's always an array
+      .catch((err) => {
+        console.error("Error fetching APIs:", err);
+        setError(err.response?.data?.error || err.message || "Failed to fetch APIs");
+        setApis([]); // Set empty array on error
+      })
       .finally(() => setLoading(false));
   };
 
@@ -73,8 +77,8 @@ export default function ApiList() {
     }
   }, [userEmail]);
 
-  const filteredApis = apis.filter((api) =>
-    api.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredApis = (apis || []).filter((api) =>
+    api?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Delete API
@@ -95,10 +99,20 @@ export default function ApiList() {
   };
 
   const downloadDocs = async (api) => {
+    if (!api?.name) {
+      alert("Invalid API data");
+      return;
+    }
+
     setDownloading(prev => prev + 1);
     try {
       const res = await axios.get(`${baseUrl}/apis/${api.name}`, { withCredentials: true });
       const data = res.data;
+      
+      if (!data) {
+        throw new Error("No API data received");
+      }
+
       const schema = typeof data.schemaJson === "string" ? JSON.parse(data.schemaJson) : data.schemaJson;
       const doc = new jsPDF();
 
@@ -124,7 +138,7 @@ export default function ApiList() {
       yPosition += 15;
 
       doc.setFontSize(12);
-      doc.text(`API Name: ${api.name}`, 15, yPosition);
+      doc.text(`API Name: ${api.name || 'N/A'}`, 15, yPosition);
       yPosition += 8;
 
       if (api.description) {
@@ -133,7 +147,7 @@ export default function ApiList() {
         yPosition += splitDescription.length * 6;
       }
 
-      doc.text(`ID: ${api.id}`, 15, yPosition);
+      doc.text(`ID: ${api.id || 'N/A'}`, 15, yPosition);
       yPosition += 8;
       doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, yPosition);
       yPosition += 15;
@@ -173,6 +187,8 @@ export default function ApiList() {
     } catch (err) {
       console.error("Error downloading docs:", err);
       alert("Failed to download documentation.");
+    } finally {
+      setDownloading(prev => prev - 1);
     }
   };
 
@@ -260,7 +276,7 @@ export default function ApiList() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <StatCard icon={<EyeIcon className="h-6 w-6 text-blue-400" />} label="Total APIs" value={apis.length} color="blue" />
             <StatCard icon={<DocumentArrowDownIcon className="h-6 w-6 text-green-400" />} label="Available" value={filteredApis.length} color="green" />
-            <StatCard icon={<PlayIcon className="h-6 w-6 text-purple-400" />} label="Ready to Test" value={apis.filter(a => a.schemaJson).length} color="purple" />
+            <StatCard icon={<PlayIcon className="h-6 w-6 text-purple-400" />} label="Ready to Test" value={apis.filter(a => a?.schemaJson).length} color="purple" />
             <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-pink-400" />} label="Documented" value={downloading} color="pink" />
           </div>
 
@@ -303,8 +319,8 @@ function StatCard({ icon, label, value, color }) {
   };
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-purple-500/20 relative overflow-hidden group hover:scale-105 transition-all duration-300">
-      <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${colorMap[color]}"></div>
+    <div className={`bg-gray-800/50 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-purple-500/20 relative overflow-hidden group hover:scale-105 transition-all duration-300`}>
+      <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${colorMap[color]}`}></div>
       <div className="relative z-10 flex items-center">
         <div className={`p-2 bg-${color}-500/20 rounded-xl backdrop-blur-sm`}>{icon}</div>
         <div className="ml-4">
@@ -366,6 +382,11 @@ function EmptyState({ searchTerm, setSearchTerm }) {
 }
 
 function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSchema, navigate }) {
+  // Add safety checks for api properties
+  if (!api) {
+    return null; // Don't render if api is undefined/null
+  }
+
   return (
     <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl overflow-hidden border border-purple-500/20 hover:shadow-2xl transition-all duration-300 hover:border-purple-500/50 relative group">
       {/* Glow effect */}
@@ -376,7 +397,7 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
         onClick={() => deleteApi(api)}
         disabled={deleting === api.id}
         className="absolute top-3 right-3 p-1.5 bg-red-500/20 text-red-300 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-500/30 hover:text-white backdrop-blur-sm border border-red-500/30 disabled:opacity-50 z-10"
-        aria-label={`Delete ${api.name}`}
+        aria-label={`Delete ${api.name || 'API'}`}
       >
         {deleting === api.id ? (
           <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -392,7 +413,7 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
               <ServerIcon className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white group-hover:text-purple-300 transition-colors">{api.name}</h3>
+              <h3 className="text-lg font-semibold text-white group-hover:text-purple-300 transition-colors">{api.name || 'Unnamed API'}</h3>
             </div>
           </div>
         </div>
@@ -424,10 +445,10 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
           <div className="flex gap-3">
             <button
               onClick={() => downloadDocs(api)}
-              disabled={downloading === api.id}
+              disabled={downloading > 0}
               className="group relative flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500/20 text-green-300 rounded-xl hover:bg-green-500/30 transition-all duration-300 transform hover:-translate-y-1 border border-green-500/30 backdrop-blur-sm disabled:opacity-50"
             >
-              {downloading === api.id ? (
+              {downloading > 0 ? (
                 <ArrowPathIcon className="h-4 w-4 animate-spin" />
               ) : (
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
