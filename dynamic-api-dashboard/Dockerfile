@@ -1,26 +1,30 @@
-# Build stage
+# ---------- Build Stage ----------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY dynamic-api-dashboard/package*.json ./
+# Copy dependency files
+COPY dynamic-api-dashboard/package.json ./
+COPY dynamic-api-dashboard/yarn.lock ./
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps
+# Install dependencies (using Yarn)
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY dynamic-api-dashboard/ .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
-# Production stage
+
+# ---------- Production Stage ----------
 FROM nginx:alpine
 
-# Copy built application
+# Copy the build output to nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Expose nginx default port
 EXPOSE 80
 
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
