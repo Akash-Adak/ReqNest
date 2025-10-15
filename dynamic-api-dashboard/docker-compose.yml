@@ -1,14 +1,11 @@
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: akta2910/reqnest-frontend:03
+    image: akta2910/reqnest-frontend:latest
     container_name: reqnest-frontend
     ports:
       - "8081:80"
     environment:
-      - VITE_API_URL=http://backend:8080
+      - VITE_API_URL=${VITE_API_URL}
     networks:
       - cloudnet
 
