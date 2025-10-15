@@ -18,8 +18,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Login from '../pages/Login.jsx';
 
 const Navbar = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -28,24 +30,24 @@ const Navbar = () => {
   const location = useLocation();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications] = useState([
-    { 
-      id: 1, 
-      message: "New API request logged", 
-      time: "2m ago", 
-      read: false, 
+    {
+      id: 1,
+      message: "New API request logged",
+      time: "2m ago",
+      read: false,
       type: "info",
       icon: <InformationCircleIcon className="h-5 w-5 text-blue-500" />
     },
-    { 
-      id: 2, 
-      message: "Subscription upgraded to Premium", 
-      time: "1h ago", 
-      read: true, 
+    {
+      id: 2,
+      message: "Subscription upgraded to Premium",
+      time: "1h ago",
+      read: true,
       type: "success",
       icon: <CheckCircleIcon className="h-5 w-5 text-green-500" />
     }
   ]);
-  
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
@@ -65,7 +67,7 @@ const Navbar = () => {
 
     window.addEventListener("scroll", handleScroll);
     document.addEventListener("mousedown", handleClickOutside);
-    
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
@@ -79,32 +81,44 @@ const Navbar = () => {
     toast.success("Logged out successfully");
   };
 
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+    setMobileMenuOpen(false); // Close mobile menu when opening login modal
+  };
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
+
   const isActiveLink = (path) => {
     return location.pathname === path;
   };
 
   return (
     <>
+      {/* Login Modal */}
+      <Login isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+
       <nav className={`fixed top-0 w-full z-40 transition-all duration-300 ${
-        scrolled 
-          ? "bg-black/95 backdrop-blur-md shadow-2xl border-b border-white/10" 
+        scrolled
+          ? "bg-black/95 backdrop-blur-md shadow-2xl border-b border-white/10"
           : "bg-black/90 backdrop-blur-sm"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-<div className="flex-shrink-0 flex items-center">
-  <Link to="/" className="flex items-center space-x-3">
-    <img
-      src="/logo.png"
-      alt="ReqNest Logo"
-      className="h-10 w-10 object-contain"
-    />
-    <span className="text-2xl font-black text-white">
-      ReqNest
-    </span>
-  </Link>
-</div>
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/" className="flex items-center space-x-3">
+                <img
+                  src="/logo.png"
+                  alt="ReqNest Logo"
+                  className="h-10 w-10 object-contain"
+                />
+                <span className="text-2xl font-black text-white">
+                  ReqNest
+                </span>
+              </Link>
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:block">
@@ -112,8 +126,8 @@ const Navbar = () => {
                 <Link
                   to="/"
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                    isActiveLink("/") 
-                      ? "text-white bg-white/20 border border-white/30" 
+                    isActiveLink("/")
+                      ? "text-white bg-white/20 border border-white/30"
                       : "text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
@@ -122,12 +136,12 @@ const Navbar = () => {
                     Home
                   </div>
                 </Link>
-                
+
                 <Link
                   to="/apis"
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                    isActiveLink("/apis") 
-                      ? "text-white bg-white/20 border border-white/30" 
+                    isActiveLink("/apis")
+                      ? "text-white bg-white/20 border border-white/30"
                       : "text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
@@ -136,12 +150,12 @@ const Navbar = () => {
                     APIs
                   </div>
                 </Link>
-                
+
                 <Link
                   to="/plans"
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                    isActiveLink("/plans") 
-                      ? "text-white bg-white/20 border border-white/30" 
+                    isActiveLink("/plans")
+                      ? "text-white bg-white/20 border border-white/30"
                       : "text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
@@ -179,7 +193,7 @@ const Navbar = () => {
                         <div className="px-4 py-3 border-b border-white/10">
                           <h3 className="text-sm font-bold text-white">Notifications</h3>
                         </div>
-                        
+
                         <div className="max-h-96 overflow-y-auto">
                           {notifications.length === 0 ? (
                             <div className="px-4 py-6 text-center">
@@ -217,7 +231,7 @@ const Navbar = () => {
                     )}
                   </div>
                 )}
-                
+
                 {loading ? (
                   <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : user ? (
@@ -253,7 +267,7 @@ const Navbar = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="py-2">
                           <Link
                             to="/profile"
@@ -263,7 +277,7 @@ const Navbar = () => {
                             <UserCircleIcon className="w-5 h-5 mr-3" />
                             Profile
                           </Link>
-                          
+
                           <Link
                             to="/dashboard"
                             className="flex items-center w-full px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all border-b border-white/5"
@@ -272,7 +286,7 @@ const Navbar = () => {
                             <Cog6ToothIcon className="w-5 h-5 mr-3" />
                             Dashboard
                           </Link>
-                          
+
                           <button
                             onClick={handleLogout}
                             className="flex items-center w-full px-4 py-3 text-sm text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all"
@@ -286,18 +300,20 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-3">
-                    <Link
-                      to="/login"
+                    {/* CHANGED: Replaced Link with button for modal */}
+                    <button
+                      onClick={openLoginModal}
                       className="text-gray-300 hover:text-white px-4 py-2 text-sm font-bold transition-all duration-200 border border-white/20 hover:border-white/40 rounded-lg"
                     >
                       Sign In
-                    </Link>
-                    <Link
-                      to="/login"
+                    </button>
+                    {/* CHANGED: Replaced Link with button for modal */}
+                    <button
+                      onClick={openLoginModal}
                       className="px-6 py-2 bg-white text-black text-sm font-bold rounded-lg border border-white hover:bg-gray-100 transition-all duration-200"
                     >
                       Get Started
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -318,7 +334,7 @@ const Navbar = () => {
                   )}
                 </button>
               )}
-              
+
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 focus:outline-none transition-all duration-200 border border-transparent hover:border-white/20"
@@ -340,8 +356,8 @@ const Navbar = () => {
               <Link
                 to="/"
                 className={`flex items-center w-full px-4 py-3 rounded-lg text-base font-bold transition-all duration-200 ${
-                  isActiveLink("/") 
-                    ? "text-white bg-white/20 border border-white/30" 
+                  isActiveLink("/")
+                    ? "text-white bg-white/20 border border-white/30"
                     : "text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -349,12 +365,12 @@ const Navbar = () => {
                 <HomeIcon className="h-5 w-5 mr-3" />
                 Home
               </Link>
-              
+
               <Link
                 to="/apis"
                 className={`flex items-center w-full px-4 py-3 rounded-lg text-base font-bold transition-all duration-200 ${
-                  isActiveLink("/apis") 
-                    ? "text-white bg-white/20 border border-white/30" 
+                  isActiveLink("/apis")
+                    ? "text-white bg-white/20 border border-white/30"
                     : "text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -362,12 +378,12 @@ const Navbar = () => {
                 <ServerStackIcon className="h-5 w-5 mr-3" />
                 APIs
               </Link>
-              
+
               <Link
                 to="/plans"
                 className={`flex items-center w-full px-4 py-3 rounded-lg text-base font-bold transition-all duration-200 ${
-                  isActiveLink("/plans") 
-                    ? "text-white bg-white/20 border border-white/30" 
+                  isActiveLink("/plans")
+                    ? "text-white bg-white/20 border border-white/30"
                     : "text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -399,7 +415,7 @@ const Navbar = () => {
                       <div className="text-sm text-gray-400">{user.email}</div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-3 px-2 space-y-2">
                     <Link
                       to="/profile"
@@ -409,7 +425,7 @@ const Navbar = () => {
                       <UserCircleIcon className="h-5 w-5 mr-3" />
                       Profile
                     </Link>
-                    
+
                     <Link
                       to="/dashboard"
                       className="flex items-center w-full px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/20"
@@ -418,7 +434,7 @@ const Navbar = () => {
                       <Cog6ToothIcon className="h-5 w-5 mr-3" />
                       Dashboard
                     </Link>
-                    
+
                     <button
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
@@ -430,20 +446,20 @@ const Navbar = () => {
                 </>
               ) : (
                 <div className="mt-3 px-2 space-y-3">
-                  <Link
-                    to="/login"
+                  {/* CHANGED: Replaced Link with button for modal */}
+                  <button
+                    onClick={openLoginModal}
                     className="block w-full px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all text-center border border-white/20 hover:border-white/40"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
-                  </Link>
-                  <Link
-                    to="/login"
+                  </button>
+                  {/* CHANGED: Replaced Link with button for modal */}
+                  <button
+                    onClick={openLoginModal}
                     className="block w-full px-4 py-3 rounded-lg text-base font-bold text-white bg-white hover:bg-gray-100 transition-all text-center border border-white"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Get Started
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
