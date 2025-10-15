@@ -6,9 +6,9 @@ spring:
     port: 8080
 
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:platform_db}
-    username: ${DB_USER:root}
-    password: Akash@2003
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     hibernate:
       ddl-auto: update
