@@ -204,7 +204,7 @@ export default function ApiDetails() {
       setLoading(true);
       setError(null);
       const res = await axios.get(
-        `http://localhost:8080/cloud-api/endpoints/${apiName}`,
+        `${baseUrl}/cloud-api/endpoints/${apiName}`,
         { withCredentials: true, timeout: 10000 }
       );
       console.log(res);
