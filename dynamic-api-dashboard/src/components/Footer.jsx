@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import {
   DocumentTextIcon,
   BookOpenIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  PhoneIcon
 } from "@heroicons/react/24/outline";
 
 // Social media icons (since they're not available in Heroicons)
@@ -25,87 +28,243 @@ const LinkedInIcon = ({ className = "h-6 w-6" }) => (
   </svg>
 );
 
+const DiscordIcon = ({ className = "h-6 w-6" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20.317 4.37a19.791 19.791 0 01-5.922 1.618 13.728 13.728 0 00-2.884-2.56c-.36-.246-.743-.448-1.145-.607a.22.22 0 00-.118-.017 17.756 17.756 0 00-1.366.366 19.553 19.553 0 01-5.919-1.618.172.172 0 00-.188.067 19.86 19.86 0 00-2.74 10.476 19.838 19.838 0 003.257 10.082.17.17 0 00.175.074 18.836 18.836 0 005.049-1.516 14.344 14.344 0 001.33-.594.166.166 0 01.168 0 13.776 13.776 0 001.998 1.093c.777.373 1.587.68 2.417.917a.165.165 0 00.188-.067 19.875 19.875 0 002.74-10.476 19.855 19.855 0 00-3.257-10.082.172.172 0 00-.175-.074zM8.02 15.33c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443zm7.975 0c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443z"/>
+  </svg>
+);
+
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Company Info */}
+    <footer className="bg-gradient-to-b from-gray-900 to-black pt-20 pb-8 border-t border-white/10">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-green-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-32 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-16">
+          {/* Company Info - Enhanced with Logo */}
           <div className="lg:col-span-2">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-white">ReqNest</span>
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="flex items-center space-x-3">
+                <img
+                  src="/logo.png"
+                  alt="ReqNest Logo"
+                  className="h-12 w-12 object-contain rounded-lg bg-white/5 p-2 border border-white/10"
+                />
+                <div>
+                  <span className="text-2xl font-black text-white bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    ReqNest
+                  </span>
+                  <p className="text-xs text-green-400 font-semibold mt-1">API PLATFORM</p>
+                </div>
+              </div>
             </div>
-            <p className="mt-4 max-w-md text-gray-400">
-              The complete API management platform for developers and teams. Build, test, and scale your APIs with ease.
+            
+            <p className="text-gray-300 mb-6 max-w-md leading-relaxed">
+              The complete API management platform for developers and teams. Build, test, and scale your APIs with enterprise-grade features.
             </p>
-            <div className="flex space-x-6 mt-6">
-              <a href="#" className="text-gray-400 hover:text-white">
-                <span className="sr-only">Twitter</span>
-                <TwitterIcon className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                <span className="sr-only">GitHub</span>
-                <GitHubIcon className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                <span className="sr-only">LinkedIn</span>
-                <LinkedInIcon className="h-6 w-6" />
-              </a>
+
+            {/* Contact Info */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center text-gray-300">
+                <EnvelopeIcon className="h-4 w-4 mr-3 text-green-400" />
+                <span className="text-sm">hello@reqnest.com</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <PhoneIcon className="h-4 w-4 mr-3 text-green-400" />
+                <span className="text-sm">+1 (555) 123-4567</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <MapPinIcon className="h-4 w-4 mr-3 text-green-400" />
+                <span className="text-sm">San Francisco, CA</span>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex space-x-4">
+              {[
+                { icon: TwitterIcon, href: "#", label: "Twitter" },
+                { icon: GitHubIcon, href: "#", label: "GitHub" },
+                { icon: LinkedInIcon, href: "#", label: "LinkedIn" },
+                { icon: DiscordIcon, href: "#", label: "Discord" }
+              ].map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  className="group p-3 bg-white/5 border border-white/10 rounded-xl hover:border-green-400/30 hover:bg-green-500/10 transition-all duration-300"
+                >
+                  <span className="sr-only">{social.label}</span>
+                  <social.icon className="h-5 w-5 text-gray-400 group-hover:text-green-400 transition-colors" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Product */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
-            <ul className="space-y-2">
-              <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
-              <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link to="/use-cases" className="hover:text-white transition-colors">Use Cases</Link></li>
-              <li><Link to="/integrations" className="hover:text-white transition-colors">Integrations</Link></li>
+            <h3 className="text-white font-bold text-lg mb-6 flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+              Product
+            </h3>
+            <ul className="space-y-3">
+              {[
+                { name: "Features", path: "/features" },
+                { name: "Pricing", path: "/pricing" },
+                { name: "Use Cases", path: "/use-cases" },
+                { name: "Integrations", path: "/integrations" },
+                { name: "Roadmap", path: "/roadmap" },
+                { name: "Changelog", path: "/changelog" }
+              ].map((item, index) => (
+                <li key={index}>
+                  <Link 
+                    to={item.path} 
+                    className="text-gray-400 hover:text-green-400 transition-all duration-200 hover:translate-x-1 flex items-center group"
+                  >
+                    <div className="w-1 h-1 bg-gray-600 rounded-full mr-3 group-hover:bg-green-400 transition-colors"></div>
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Resources */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li><Link to="/docs" className="hover:text-white transition-colors flex items-center">
-                <DocumentTextIcon className="h-4 w-4 mr-1" />
-                Documentation
-              </Link></li>
-              <li><Link to="/api-reference" className="hover:text-white transition-colors flex items-center">
-                <BookOpenIcon className="h-4 w-4 mr-1" />
-                API Reference
-              </Link></li>
-              <li><Link to="/guides" className="hover:text-white transition-colors">Guides</Link></li>
-              <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+            <h3 className="text-white font-bold text-lg mb-6 flex items-center">
+              <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+              Resources
+            </h3>
+            <ul className="space-y-3">
+              {[
+                { name: "Documentation", path: "/docs", icon: DocumentTextIcon },
+                { name: "API Reference", path: "/api-reference", icon: BookOpenIcon },
+                { name: "Tutorials", path: "/tutorials" },
+                { name: "Blog", path: "/blog" },
+                { name: "Case Studies", path: "/case-studies" },
+                { name: "Webinars", path: "/webinars" }
+              ].map((item, index) => (
+                <li key={index}>
+                  <Link 
+                    to={item.path} 
+                    className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 flex items-center group"
+                  >
+                    {item.icon && <item.icon className="h-4 w-4 mr-2" />}
+                    <div className="w-1 h-1 bg-gray-600 rounded-full mr-3 group-hover:bg-blue-400 transition-colors"></div>
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li><Link to="/help" className="hover:text-white transition-colors flex items-center">
-                <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
-                Help Center
-              </Link></li>
-              <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              <li><Link to="/status" className="hover:text-white transition-colors">Status</Link></li>
-              <li><Link to="/community" className="hover:text-white transition-colors">Community</Link></li>
+            <h3 className="text-white font-bold text-lg mb-6 flex items-center">
+              <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
+              Support
+            </h3>
+            <ul className="space-y-3">
+              {[
+                { name: "Help Center", path: "/help", icon: QuestionMarkCircleIcon },
+                { name: "Contact Sales", path: "/contact" },
+                { name: "Status", path: "/status" },
+                { name: "Community", path: "/community" },
+                { name: "Partners", path: "/partners" },
+                { name: "Training", path: "/training" }
+              ].map((item, index) => (
+                <li key={index}>
+                  <Link 
+                    to={item.path} 
+                    className="text-gray-400 hover:text-purple-400 transition-all duration-200 hover:translate-x-1 flex items-center group"
+                  >
+                    {item.icon && <item.icon className="h-4 w-4 mr-2" />}
+                    <div className="w-1 h-1 bg-gray-600 rounded-full mr-3 group-hover:bg-purple-400 transition-colors"></div>
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-white font-bold text-lg mb-6 flex items-center">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+              Company
+            </h3>
+            <ul className="space-y-3">
+              {[
+                { name: "About Us", path: "/about" },
+                { name: "Careers", path: "/careers" },
+                { name: "Press Kit", path: "/press" },
+                { name: "Open Source", path: "/open-source" },
+                { name: "Security", path: "/security" },
+                { name: "Contact", path: "/contact" }
+              ].map((item, index) => (
+                <li key={index}>
+                  <Link 
+                    to={item.path} 
+                    className="text-gray-400 hover:text-yellow-400 transition-all duration-200 hover:translate-x-1 flex items-center group"
+                  >
+                    <div className="w-1 h-1 bg-gray-600 rounded-full mr-3 group-hover:bg-yellow-400 transition-colors"></div>
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center">
-            <p className="text-gray-400">© {new Date().getFullYear()} ReqNest. All rights reserved.</p>
+        {/* Newsletter Section */}
+        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-2xl p-8 mb-12 backdrop-blur-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-white font-bold text-xl mb-2">Stay Updated</h3>
+              <p className="text-gray-300">Get the latest news and updates about new features and releases.</p>
+            </div>
+            <div className="flex space-x-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-black/50 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors"
+              />
+              <button className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-6">
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} ReqNest Technologies. All rights reserved.
+            </p>
+            <div className="flex items-center space-x-2 text-green-400">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-xs font-semibold">All systems operational</span>
+            </div>
           </div>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link to="/privacy" className="text-gray-400 hover:text-white text-sm">Privacy</Link>
-            <Link to="/terms" className="text-gray-400 hover:text-white text-sm">Terms</Link>
-            <Link to="/security" className="text-gray-400 hover:text-white text-sm">Security</Link>
-            <Link to="/cookies" className="text-gray-400 hover:text-white text-sm">Cookies</Link>
+            {[
+              { name: "Privacy", path: "/privacy" },
+              { name: "Terms", path: "/terms" },
+              { name: "Security", path: "/security" },
+              { name: "Cookies", path: "/cookies" }
+            ].map((item, index) => (
+              <Link
+                key={index}
+                to={item.path}
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
