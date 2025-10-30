@@ -11,9 +11,7 @@ import {
   DocumentTextIcon,
   XMarkIcon,
   PencilSquareIcon,
-  PlusIcon,
-  SparklesIcon,
-  BoltIcon
+  PlusIcon
 } from "@heroicons/react/24/outline";
 import jsPDF from "jspdf";
 import axios from "axios";
@@ -28,19 +26,6 @@ export default function ApiList() {
   const [downloading, setDownloading] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const [deleting, setDeleting] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
 
   // Fetch APIs from backend
   const fetchApis = () => {
@@ -48,11 +33,11 @@ export default function ApiList() {
     setError(null);
     axios
       .get(`${baseUrl}/apis`, { withCredentials: true })
-      .then((res) => setApis(res.data || [])) // Ensure it's always an array
+      .then((res) => setApis(res.data || []))
       .catch((err) => {
         console.error("Error fetching APIs:", err);
         setError(err.response?.data?.error || err.message || "Failed to fetch APIs");
-        setApis([]); // Set empty array on error
+        setApis([]);
       })
       .finally(() => setLoading(false));
   };
@@ -64,7 +49,7 @@ export default function ApiList() {
         const res = await axios.get(`${baseUrl}/api/user`, { withCredentials: true });
         setUserEmail(res.data.email);
       } catch {
-        setUserEmail(""); // not logged in
+        setUserEmail("");
       }
     };
     fetchUser();
@@ -196,6 +181,22 @@ export default function ApiList() {
     navigate(`/upload`, { state: { existingApi: api } });
   };
 
+  // Enhanced navigation with error handling
+  const handleAddNewApi = () => {
+    console.log("Navigating to /upload");
+    navigate('/upload');
+  };
+
+  const handleTestApi = (apiName) => {
+    console.log("Navigating to test:", apiName);
+    navigate(`/test/${apiName}`);
+  };
+
+  const handleSdkSetup = (apiName) => {
+    console.log("Navigating to SDK:", apiName);
+    navigate(`/sdk/${apiName}`);
+  };
+
   // 🚨 Block page if not logged in
   if (!userEmail) {
     return (
@@ -209,103 +210,93 @@ export default function ApiList() {
   }
 
   return (
-    <>
-      {/* Mouse follower */}
-      <div 
-        className="fixed w-4 h-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full pointer-events-none z-50 opacity-10 transition-all duration-100 ease-out"
-        style={{
-          left: mousePosition.x - 8,
-          top: mousePosition.y - 8,
-        }}
-      />
-
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 text-white pt-16">
-        <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-white">API Library</h1>
-                <p className="text-gray-300 mt-2">Explore and test all available APIs in one place</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={fetchApis}
-                  disabled={loading}
-                  className="p-2.5 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-purple-500/20 hover:bg-purple-500/20 transition-all duration-300 transform hover:-translate-y-1 group"
-                  aria-label="Refresh APIs"
-                >
-                  <ArrowPathIcon className={`h-5 w-5 text-purple-400 group-hover:text-white ${loading ? "animate-spin" : ""}`} />
-                </button>
-
-                <button
-                  onClick={() => navigate(`/upload`)}
-                  className="group relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <PlusIcon className="h-4 w-4 relative z-10" />
-                  <span className="relative z-10 font-bold">Add New API</span>
-                </button>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 text-white pt-16 relative z-10">
+      <div className="max-w-7xl mx-auto p-6 relative z-20">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">API Library</h1>
+              <p className="text-gray-300 mt-2">Explore and test all available APIs in one place</p>
             </div>
 
-            {/* Search + User Info */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="relative w-full sm:max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-purple-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search APIs by name..."
-                  className="pl-10 pr-4 py-3 w-full rounded-xl border border-purple-500/30 bg-gray-800/50 backdrop-blur-sm text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={fetchApis}
+                disabled={loading}
+                className="p-2.5 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-purple-500/20 hover:bg-purple-500/20 transition-all duration-300 transform hover:-translate-y-1 group"
+                aria-label="Refresh APIs"
+              >
+                <ArrowPathIcon className={`h-5 w-5 text-purple-400 group-hover:text-white ${loading ? "animate-spin" : ""}`} />
+              </button>
 
-              <div className="flex items-center bg-purple-500/20 text-purple-200 px-4 py-2 rounded-xl backdrop-blur-sm border border-purple-500/30">
-                <UserIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">{userEmail}</span>
-              </div>
+              <button
+                onClick={handleAddNewApi}
+                className="group relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <PlusIcon className="h-4 w-4 relative z-10" />
+                <span className="relative z-10 font-bold">Add New API</span>
+              </button>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={<EyeIcon className="h-6 w-6 text-blue-400" />} label="Total APIs" value={apis.length} color="blue" />
-            <StatCard icon={<DocumentArrowDownIcon className="h-6 w-6 text-green-400" />} label="Available" value={filteredApis.length} color="green" />
-            <StatCard icon={<PlayIcon className="h-6 w-6 text-purple-400" />} label="Ready to Test" value={apis.filter(a => a?.schemaJson).length} color="purple" />
-            <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-pink-400" />} label="Documented" value={downloading} color="pink" />
-          </div>
-
-          {/* API List */}
-          {loading ? (
-            <Loader />
-          ) : error ? (
-            <ErrorState error={error} onRetry={fetchApis} />
-          ) : filteredApis.length === 0 ? (
-            <EmptyState searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredApis.map((api) => (
-                <ApiCard
-                  key={api.id}
-                  api={api}
-                  deleting={deleting}
-                  downloading={downloading}
-                  deleteApi={deleteApi}
-                  downloadDocs={downloadDocs}
-                  updateSchema={updateSchema}
-                  navigate={navigate}
-                />
-              ))}
+          {/* Search + User Info */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="relative w-full sm:max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-purple-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search APIs by name..."
+                className="pl-10 pr-4 py-3 w-full rounded-xl border border-purple-500/30 bg-gray-800/50 backdrop-blur-sm text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          )}
+
+            <div className="flex items-center bg-purple-500/20 text-purple-200 px-4 py-2 rounded-xl backdrop-blur-sm border border-purple-500/30">
+              <UserIcon className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">{userEmail}</span>
+            </div>
+          </div>
         </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatCard icon={<EyeIcon className="h-6 w-6 text-blue-400" />} label="Total APIs" value={apis.length} color="blue" />
+          <StatCard icon={<DocumentArrowDownIcon className="h-6 w-6 text-green-400" />} label="Available" value={filteredApis.length} color="green" />
+          <StatCard icon={<PlayIcon className="h-6 w-6 text-purple-400" />} label="Ready to Test" value={apis.filter(a => a?.schemaJson).length} color="purple" />
+          <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-pink-400" />} label="Documented" value={downloading} color="pink" />
+        </div>
+
+        {/* API List */}
+        {loading ? (
+          <Loader />
+        ) : error ? (
+          <ErrorState error={error} onRetry={fetchApis} />
+        ) : filteredApis.length === 0 ? (
+          <EmptyState searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredApis.map((api) => (
+              <ApiCard
+                key={api.id}
+                api={api}
+                deleting={deleting}
+                downloading={downloading}
+                deleteApi={deleteApi}
+                downloadDocs={downloadDocs}
+                updateSchema={updateSchema}
+                handleTestApi={handleTestApi}
+                handleSdkSetup={handleSdkSetup}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -381,7 +372,7 @@ function EmptyState({ searchTerm, setSearchTerm }) {
   );
 }
 
-function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSchema, navigate }) {
+function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSchema, handleTestApi, handleSdkSetup }) {
   // Add safety checks for api properties
   if (!api) {
     return null; // Don't render if api is undefined/null
@@ -425,7 +416,7 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
         <div className="flex flex-col gap-3">
           <div className="flex gap-3">
             <button
-              onClick={() => navigate(`/test/${api.name}`)}
+              onClick={() => handleTestApi(api.name)}
               className="group relative flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -456,7 +447,7 @@ function ApiCard({ api, deleting, downloading, deleteApi, downloadDocs, updateSc
               Download PDF
             </button>
             <button
-              onClick={() => navigate(`/sdk/${api.name}`)}
+              onClick={() => handleSdkSetup(api.name)}
               className="group relative flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl hover:bg-purple-500/30 transition-all duration-300 transform hover:-translate-y-1 border border-purple-500/30 backdrop-blur-sm"
             >
               <EyeIcon className="h-4 w-4" />
