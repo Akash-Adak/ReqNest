@@ -30,17 +30,17 @@ const LinkedInIcon = ({ className = "h-6 w-6" }) => (
 
 const DiscordIcon = ({ className = "h-6 w-6" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M20.317 4.37a19.791 19.791 0 01-5.922 1.618 13.728 13.728 0 00-2.884-2.56c-.36-.246-.743-.448-1.145-.607a.22.22 0 00-.118-.017 17.756 17.756 0 00-1.366.366 19.553 19.553 0 01-5.919-1.618.172.172 0 00-.188.067 19.86 19.86 0 00-2.74 10.476 19.838 19.838 0 003.257 10.082.17.17 0 00.175.074 18.836 18.836 0 005.049-1.516 14.344 14.344 0 001.33-.594.166.166 0 01.168 0 13.776 13.776 0 001.998 1.093c.777.373 1.587.68 2.417.917a.165.165 0 00.188-.067 19.875 19.875 0 002.74-10.476 19.855 19.855 0 00-3.257-10.082.172.172 0 00-.175-.074zM8.02 15.33c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443zm7.975 0c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443z"/>
+    <path d="M20.317 4.37a19.791 19.791 0 01-5.922 1.618 13.728 13.728 0 00-2.884-2.56c-.360-.246-.743-.448-1.145-.607a.22.22 0 00-.118-.017 17.756 17.756 0 00-1.366.366 19.553 19.553 0 01-5.919-1.618.172.172 0 00-.188.067 19.86 19.86 0 00-2.74 10.476 19.838 19.838 0 003.257 10.082.17.17 0 00.175.074 18.836 18.836 0 005.049-1.516 14.344 14.344 0 001.33-.594.166.166 0 01.168 0 13.776 13.776 0 001.998 1.093c.777.373 1.587.68 2.417.917a.165.165 0 00.188-.067 19.875 19.875 0 002.74-10.476 19.855 19.855 0 00-3.257-10.082.172.172 0 00-.175-.074zM8.02 15.33c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443zm7.975 0c-1.183 0-2.157-1.12-2.157-2.443 0-1.324.95-2.443 2.157-2.443 1.208 0 2.175 1.119 2.157 2.443 0 1.323-.95 2.443-2.157 2.443z"/>
   </svg>
 );
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-black pt-20 pb-8 border-t border-white/10">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-green-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -right-32 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl"></div>
+    <footer className="bg-gradient-to-b from-gray-900 to-black pt-20 pb-8 border-t border-white/10 relative z-10">
+      {/* Fixed Background Elements - Now with pointer-events-none */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-green-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-40 -right-32 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

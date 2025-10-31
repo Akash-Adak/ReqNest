@@ -11,7 +11,7 @@ public class InvoiceGenerator {
     // Company details
     private static final String COMPANY_NAME = "ReqNest Technologies Pvt. Ltd.";
     private static final String COMPANY_ADDRESS = "Tech Park, Level 5, Sector 62, Kolkata, West Bengal 201309";
-    private static final String COMPANY_PHONE = "+91 8653026878";
+    private static final String COMPANY_PHONE = "+91 xxxxxxxxxx";
     private static final String COMPANY_EMAIL = "reqnest@gmail.com";
     private static final String COMPANY_WEBSITE = "www.reqnest.com";
     private static final String COMPANY_GSTIN = "29ABCDE1234F1Z5";
