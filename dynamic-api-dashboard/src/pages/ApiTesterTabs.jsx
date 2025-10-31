@@ -349,35 +349,41 @@ export default function ApiTesterTabs() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                <RocketLaunchIcon className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">API Playground</h1>
-                <p className="text-sm text-gray-400">{apiName}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              {user && (
-                <div className="flex items-center space-x-2 text-sm">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-gray-300">{user.name || user.email}</span>
-                  <span className="text-gray-500">|</span>
-                  <span className="text-purple-300 font-semibold">{user.tier} Tier</span>
-                </div>
-              )}
-              <div className="text-sm text-gray-400 font-mono bg-gray-700 px-3 py-1 rounded">
-                {baseUrl}
-              </div>
-            </div>
-          </div>
+<div className="bg-gray-900 border-b border-gray-800 pt-20 pb-4"> {/* Increased top padding and added bottom padding */}
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+          <RocketLaunchIcon className="w-7 h-7 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white">API Playground</h1>
+          <p className="text-sm text-gray-400 mt-1">{apiName}</p>
         </div>
       </div>
+      
+      <div className="flex items-center space-x-6">
+        {user && (
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 bg-gray-800/80 px-4 py-2 rounded-xl border border-gray-700">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-gray-200 font-medium">{user.name || user.email}</span>
+              </div>
+              <div className="w-px h-4 bg-gray-600"></div>
+              <span className="text-purple-300 font-semibold bg-purple-500/20 px-2 py-1 rounded-md text-xs">
+                {user.tier} Tier
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-gray-300 font-mono bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 shadow-lg">
+          {baseUrl}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
