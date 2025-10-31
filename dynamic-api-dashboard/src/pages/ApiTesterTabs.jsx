@@ -24,7 +24,6 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function ApiTesterTabs() {
-
   const { apiName } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -34,7 +33,7 @@ export default function ApiTesterTabs() {
   const [updateAll, setUpdateAll] = useState(false);
   const [updateField, setUpdateField] = useState("id");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
- const baseUrl = import.meta.env.VITE_API_URL;
+
   const [endpoints, setEndpoints] = useState([
     { 
       id: 1, 
@@ -92,7 +91,7 @@ export default function ApiTesterTabs() {
   const [headersText, setHeadersText] = useState(`{
   "Content-Type": "application/json"
 }`);
-
+ const baseUrl = import.meta.env.VITE_API_URL;
   const [responses, setResponses] = useState({});
   const [busy, setBusy] = useState(false);
   const [requestBody, setRequestBody] = useState("{}");
@@ -344,7 +343,7 @@ export default function ApiTesterTabs() {
 async function generateAiSample(schema) {
   try {
     const res = await axios.post(
-      `${baseUrl}/api/schema/generate-test-data`,
+      "http://localhost:8080/api/schema/generate-test-data",
       schema, 
       { withCredentials: true }
     );
