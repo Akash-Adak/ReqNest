@@ -32,7 +32,7 @@ function App() {
           <Route path="/plans" element={<Plans />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           {/* <Route path="/docs/:apiName" element={<APIDocsWrapper />} /> */}
-
+       
         
           <Route path="/test/:apiName" element={<PrivateRoute><ApiTesterTabs /></PrivateRoute>} />
             <Route path="/sdk/:apiName" element={<PrivateRoute><SdkSetup /></PrivateRoute>} />
