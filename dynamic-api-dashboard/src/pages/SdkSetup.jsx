@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function SdkSetup() {
-  const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
   const { apiName } = useParams();
   const [api, setApi] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -9,7 +9,8 @@ const USER_EXPIRY_KEY = "user_expiry";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
 
 export const AuthProvider = ({ children }) => {
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
+
 
 
   const [user, setUser] = useState(null);

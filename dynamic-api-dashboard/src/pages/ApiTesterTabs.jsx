@@ -90,7 +90,7 @@ export default function ApiTesterTabs() {
 }`);
 
 
-  const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
   const [responses, setResponses] = useState({});
   const [busy, setBusy] = useState(false);
   const [requestBody, setRequestBody] = useState("{}");

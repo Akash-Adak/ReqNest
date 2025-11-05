@@ -22,7 +22,7 @@ const toast = {
 const Toaster = () => null;
 
 export default function Plans() {
-  const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [userData, setUserData] = useState(null);

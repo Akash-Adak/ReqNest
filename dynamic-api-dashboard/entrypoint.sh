@@ -1,13 +1,8 @@
 #!/bin/sh
-set -e
+# Generate runtime config.js dynamically
+echo "window._env_ = {" > /usr/share/nginx/html/config.js
+echo "  VITE_API_URL: \"$VITE_API_URL\"" >> /usr/share/nginx/html/config.js
+echo "};" >> /usr/share/nginx/html/config.js
 
-# Replace placeholder __VITE_API_URL__ with actual env value at container startup
-: "${VITE_API_URL:=http://localhost:8080}"  # default fallback
-
-echo "Injecting VITE_API_URL=$VITE_API_URL into frontend..."
-
-find /usr/share/nginx/html -type f -exec \
-  sed -i "s|__VITE_API_URL__|$VITE_API_URL|g" {} \;
-
-# Start Nginx
+# Start nginx
 exec nginx -g 'daemon off;'
