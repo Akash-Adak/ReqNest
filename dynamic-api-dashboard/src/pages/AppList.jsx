@@ -21,7 +21,7 @@ import jsPDF from "jspdf";
 import axios from "axios";
 
 export default function ApiList() {
-  const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
   const navigate = useNavigate();
   const [apis, setApis] = useState([]);
   const [loading, setLoading] = useState(false);

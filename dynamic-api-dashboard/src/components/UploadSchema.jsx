@@ -23,7 +23,7 @@ import {
 const ajv = new Ajv();
 
 export default function UploadSchema() {
-  const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = window._env_?.VITE_API_URL;
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState("");
