@@ -17,7 +17,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy entrypoint script
-COPY entrypoint.sh /entrypoint.sh
+COPY dynamic-api-dashboard/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
