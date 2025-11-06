@@ -1,0 +1,41 @@
+name: Frontend Tests
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+jobs:
+  test-frontend:
+    name: Run Vite Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        working-directory: ./dynamic-api-dashboard
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
+        working-directory: ./dynamic-api-dashboard
+        run: yarn test --run
+
+      - name: Build for verification
+        working-directory: ./dynamic-api-dashboard
+        run: yarn build
+
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-coverage
+          path: dynamic-api-dashboard/coverage
