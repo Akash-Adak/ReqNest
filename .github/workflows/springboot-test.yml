@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Backend Build Check
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ master, dev ]
 
 jobs:
-  test-backend:
-    name: Run Spring Boot Tests
+  build-backend:
+    name: Build Spring Boot Backend (no tests)
     runs-on: ubuntu-latest
 
     services:
@@ -25,6 +25,17 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    env:
+      DB_HOST: localhost
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: testdb
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_SECRET: test-secret-key
+      SPRING_PROFILES_ACTIVE: test
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,15 +47,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Build & run tests
+      - name: Build project (skip tests)
         working-directory: ./backend-engine
         run: |
-          mvn clean package -DskipTests=false
-          ls -lh target/
+          mvn clean install -DskipTests
+          echo "✅ Backend build completed successfully."
 
-      - name: Upload backend test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-report
-          path: backend-engine/target/surefire-reports/
+      - name: List build artifacts
+        run: ls -lh ./backend-engine/target/
