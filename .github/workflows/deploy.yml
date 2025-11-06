@@ -15,7 +15,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: '1.30.0'
+          version: '1.29.2'
 
       - name: Configure kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig && chmod 600 kubeconfig
