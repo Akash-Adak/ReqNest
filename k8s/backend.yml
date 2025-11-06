@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: cloudnet
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+        - name: wait-for-dependencies
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MySQL..."
+              until nc -z mysql 3306; do sleep 2; done
+              echo "Waiting for Mongo..."
+              until nc -z mongo 27017; do sleep 2; done
+              echo "Waiting for Redis..."
+              until nc -z redis 6379; do sleep 2; done
+      containers:
+        - name: backend
+          image: akta2910/reqnest-backend:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: db-secret
+            - secretRef:
+                name: api-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: cloudnet
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+  selector:
+    app: backend
