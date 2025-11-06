@@ -11,6 +11,10 @@ jobs:
     name: Run Vite Frontend Tests
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./dynamic-api-dashboard   # 👈 Set default folder
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,23 +24,20 @@ jobs:
         with:
           node-version: 20
           cache: 'yarn'
+          cache-dependency-path: ./dynamic-api-dashboard/yarn.lock  # 👈 important!
 
       - name: Install dependencies
-        working-directory: ./dynamic-api-dashboard
         run: yarn install --frozen-lockfile
 
       - name: Run tests
-        working-directory: ./dynamic-api-dashboard
         run: yarn test --run
 
       - name: Build project
-        working-directory: ./dynamic-api-dashboard
         run: yarn build
 
-
-      - name: Upload test coverage
+      - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-test-coverage
+          name: frontend-coverage
           path: dynamic-api-dashboard/coverage
