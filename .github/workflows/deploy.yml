@@ -1,0 +1,29 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: '1.30.0'
+
+      - name: Configure kubeconfig
+        run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig && chmod 600 kubeconfig
+        env:
+          KUBECONFIG: kubeconfig
+
+      - name: Deploy Backend & Frontend
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/backend -n cloudnet
+          kubectl rollout status deployment/frontend -n cloudnet
