@@ -29,9 +29,10 @@ jobs:
         working-directory: ./dynamic-api-dashboard
         run: yarn test --run
 
-      - name: Build for verification
+      - name: Build project
         working-directory: ./dynamic-api-dashboard
         run: yarn build
+
 
       - name: Upload test coverage
         if: always()
