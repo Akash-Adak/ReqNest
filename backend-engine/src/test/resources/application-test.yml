@@ -1,13 +1,72 @@
 spring:
+  application:
+    name: backend-platform-test
+
+  server:
+    port: 0  # random available port during tests
+
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:testdb}?useSSL=false&serverTimezone=UTC
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
+
   flyway:
-    enabled: false
+    enabled: false  # skip migrations for faster tests
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/testdb}
+
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USER:}
+      password: ${REDIS_PASS:}
+      timeout: 60000
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: dummy-google-client
+            client-secret: dummy-google-secret
+            scope:
+              - email
+              - profile
+          github:
+            client-id: dummy-github-client
+            client-secret: dummy-github-secret
+            scope:
+              - user:email
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@example.com
+    password: testpass
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET:test-secret-key}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+app:
+  frontend-url: http://localhost:5173
+
+razorpay:
+  key: dummy-razorpay-key
+  secret: dummy-razorpay-secret
+
+google:
+  api:
+    key: dummy-google-api-key

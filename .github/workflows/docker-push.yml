@@ -1,10 +1,10 @@
 name: Build and Push Docker Images
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Backend Tests"]
+    types:
+      - completed
 
 jobs:
   backend-build:
