@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: cloudnet
+data:
+  # === Database Configuration ===
+  DB_HOST: mysql
+  DB_NAME: reqnestdb
+  DB_USER: root
+  DB_PORT: "3306"
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/reqnestdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+  # === MongoDB Configuration ===
+  MONGO_URI: mongodb://mongo:27017/reqnest
+
+  # === Redis Configuration ===
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+
+  # === Frontend URL (for CORS, redirects, etc.) ===
+  FRONTEND_URL: https://inerrantly-noncodified-lynetta.ngrok-free.dev
+  # === JWT ===
+  JWT_EXPIRATION: "86400000"
+
+  # === Mail Defaults (can be overridden by secrets) ===
+  MAIL_HOST: smtp.gmail.com
+  MAIL_PORT: "587"
+
+  # === Optional External APIs ===
+  GOOGLE_API_KEY: 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: cloudnet
+data:
+  # Frontend API URL (Ingress or internal service)
+  VITE_API_URL: https://inerrantly-noncodified-lynetta.ngrok-free.dev/api
+
