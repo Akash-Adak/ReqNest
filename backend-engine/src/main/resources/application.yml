@@ -71,3 +71,16 @@ razorpay:
 google:
   api:
     key: ${GOOGLE_API_KEY}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
