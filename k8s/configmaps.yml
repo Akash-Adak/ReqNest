@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: backend-config
-  namespace: cloudnet
+  namespace: reqnest
 data:
   # === Database Configuration ===
   DB_HOST: mysql
@@ -34,7 +34,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-config
-  namespace: cloudnet
+  namespace: reqnest
 data:
   # Frontend API URL (Ingress or internal service)
   VITE_API_URL: https://inerrantly-noncodified-lynetta.ngrok-free.dev/api

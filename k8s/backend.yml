@@ -2,7 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: cloudnet
+  namespace: reqnest
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8080"
+
 spec:
   replicas: 2
   selector:
@@ -43,7 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: cloudnet
+  namespace: reqnest
 spec:
   type: ClusterIP
   ports:
