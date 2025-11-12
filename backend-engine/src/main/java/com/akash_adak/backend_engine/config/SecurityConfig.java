@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers( "/api/**","/v3/**","/data/**","/api/schema/**","/email/**").permitAll()
                         .requestMatchers("/apis/**","/cloud-api/**").authenticated()
+                        .requestMatchers("/actuator/prometheus").permitAll() 
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
