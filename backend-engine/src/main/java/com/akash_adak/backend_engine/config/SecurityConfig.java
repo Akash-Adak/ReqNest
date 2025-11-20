@@ -30,12 +30,21 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/api/**","/v3/**","/data/**","/api/schema/**","/email/**").permitAll()
-                        .requestMatchers("/apis/**","/cloud-api/**").authenticated()
-                        .requestMatchers("/actuator/prometheus").permitAll() 
-                        .anyRequest().authenticated()
-                )
+              .authorizeHttpRequests(auth -> auth
+                            .requestMatchers(
+                                "/api/**",
+                                "/v3/**",
+                                "/data/**",
+                                "/api/schema/**",
+                                "/email/**",
+                                "/login/oauth2/**",   // ❤️ FIX
+                                "/oauth2/**"          // ❤️ FIX
+                            ).permitAll()
+                            .requestMatchers("/apis/**","/cloud-api/**").authenticated()
+                            .requestMatchers("/actuator/prometheus").permitAll()
+                            .anyRequest().authenticated()
+                        )
+
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
