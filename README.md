@@ -1,406 +1,417 @@
+
+
 <div align="center">
 
-# 🚀 ReqNest
-
+# 🚀 ReqNest  
 ### *Transform Ideas into Production APIs in Minutes*
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blueviolet?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-purple?style=for-the-badge)
-![Stars](https://img.shields.io/badge/stars-10k+-ff69b4?style=for-the-badge)
+![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-ready-326CE5?style=for-the-badge&logo=kubernetes)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)
 
-
-
 </div>
 
-
-![ Welcome](images/home.png)
----
-
-## 🎬 What is ReqNest?
-
-ReqNest is a revolutionary cloud-native API platform that empowers developers and businesses to automatically generate, manage, and scale backend APIs without writing traditional backend code. Think of it as "Vercel for Backend APIs" – where your data models become fully functional, production-ready APIs instantly.
-
-<table>
-<tr>
-<td width="50%">
-
-### 🐌 Traditional Way
-```bash
-Week 1: Setup infrastructure
-Week 2: Write CRUD operations
-Week 3: Add authentication
-Week 4: Generate documentation
-Week 5: Deploy & scale
-Week 6: SDK generation
-```
-⏰ **6 weeks** • 😫 Exhausting
-
-</td>
-<td width="50%">
-
-### ⚡ ReqNest Way
-```bash
-Step 1: Design schema (AI-assisted)
-Step 2: Click "Generate API"
-Step 3: Deploy
-```
-⏱️ **10 minutes** • 🎉 Production-ready
-
-</td>
-</tr>
-</table>
+<img src="images/home.png" width="100%"/>
 
 ---
 
-## ✨ Why Developers Love ReqNest
+# 🎬 What is ReqNest?
+
+**ReqNest** is a cloud-native backend automation platform that generates **real backend APIs** from your schema instantly.  
+Think of it as:
+
+### **⚡ Vercel + Firebase + Swagger + Postman + Backend-as-a-Service (BaaS)**
+
+Where **your models → instantly become production APIs**:
+
+- REST  
+- GraphQL  
+- WebSockets  
+- Real-time updates  
+- SDKs  
+- Authentication  
+- Documentation  
+
+All generated automatically.
+
+---
+
+# 🧩 Architecture Overview
+
+```
+
+React (Frontend) ──► Nginx ──► Ingress ──► Spring Boot (Backend)
+│               ├─► MySQL
+│               ├─► MongoDB
+Public HTTPS (Ngrok) ─┘               └─► Redis
+
+````
+
+### **Key Highlights**
+- Runtime configuration using `config.js`
+- Secure OAuth2 login (Google)
+- Fully containerized for Kubernetes
+- Ngrok integration for public HTTPS (local dev)
+- Works on **Kind**, **Minikube**, and **Cloud K8s**
+
+---
+
+# ✨ Why Developers Love ReqNest
 
 <div align="center">
 
-| 🎨 **AI-Powered Design** | ⚡ **Instant APIs** | 🛡️ **Enterprise Security** | 📱 **Full SDK Suite** |
-|:---:|:---:|:---:|:---:|
-| Describe in plain English, get optimized schemas | REST, GraphQL, WebSocket—all auto-generated | OAuth2, JWT, RBAC out of the box | React, Vue, Flutter, iOS, Android |
+| 🎨 AI Schema Builder | ⚡ Instant CRUD | 🔐 OAuth2 + JWT | 📚 Auto Docs |
+|---|---|---|---|
+| Generate models from plain English | Create REST/GraphQL instantly | Google OAuth2 out of the box | Swagger + SDKs |
 
 </div>
 
 ---
 
-## 🎯 Quick Start
+# 🚀 Quick Start
 
-### 📦 One-Click Deploy
+# 🟦 **Option 1 — Run with Docker Compose**
+
+Perfect for local development.
+
+### ➤ Run all services:
 
 ```bash
-# Docker Compose (Fastest)
-curl -fsSL https://get.reqnest.com | bash
-# Opens at http://localhost:3000 ✨
+docker compose up --build
+````
 
-# Or with Kubernetes
-helm install reqnest reqnest/reqnest
+### Services:
 
-# Or cloud deploy
-terraform apply -chdir=infrastructure/aws
+* Frontend → [http://localhost:3000](http://localhost:3000)
+* Backend → [http://localhost:8080](http://localhost:8080)
+* MySQL → 3306
+* MongoDB → 27017
+* Redis → 6379
+
+---
+
+# 🟩 **Option 2 — Run with Kubernetes (Kind)**
+
+### 1️⃣ Create Kind cluster
+
+```bash
+kind create cluster --name reqnest
 ```
 
-### 🎪 Your First API in 3 Steps
+### 2️⃣ Install Nginx Ingress
 
-```javascript
-// 1️⃣ Define your schema (or use AI)
-const schema = {
-  name: "BlogPost",
-  fields: {
-    title: { type: "string", required: true },
-    content: { type: "text" },
-    author: { type: "reference", to: "User" },
-    tags: { type: "array", items: "string" }
-  }
-}
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+```
 
-// 2️⃣ Generate API (automatic)
-// ✅ CRUD endpoints created
-// ✅ Authentication added
-// ✅ Documentation generated
-// ✅ SDKs ready
+### 3️⃣ Deploy all services
 
-// 3️⃣ Use it immediately
-import { ReqNest } from '@reqnest/client'
-const api = new ReqNest('your-api-key')
-await api.blogPosts.create({ title: "Hello World!" })
+```bash
+kubectl apply -f k8s/
+```
+
+Your services:
+
+```
+frontend      : NodePort 30000
+backend       : ClusterIP
+mysql         : ClusterIP
+mongo         : ClusterIP
+redis         : ClusterIP
+ingress       : /, /api, /oauth2, /login/oauth2
 ```
 
 ---
 
-## 🎨 Features That Make You Go "WOW"
+# 🌐 **Expose Your App Online (Ngrok)**
 
-### 🤖 AI-Powered Schema Builder
-```
-You: "I need a schema for an e-commerce store"
-ReqNest AI: ✨ Generated:
-  ├── Product (name, price, inventory, images)
-  ├── Category (name, parent, slug)
-  ├── Order (items, customer, status, payment)
-  ├── Customer (profile, addresses, orders)
-  └── Payment (method, amount, status, transaction_id)
-  
-  Optimized with indexes, relationships, and validations!
+### Port-forward ingress:
+
+```bash
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 ```
 
-### ⚡ Instant API Generation
+### Start ngrok:
 
-<table>
-<tr><td>
-
-**REST API**
-```http
-GET    /api/v1/products
-POST   /api/v1/products
-GET    /api/v1/products/:id
-PUT    /api/v1/products/:id
-DELETE /api/v1/products/:id
+```bash
+ngrok http http://localhost:8080
 ```
 
-</td><td>
+You get:
 
-**GraphQL API**
-```graphql
-query {
-  products(limit: 10) {
-    id, name, price
-    category { name }
-    reviews { rating }
-  }
-}
+```
+https://xxxxx.ngrok-free.dev
 ```
 
-</td><td>
+Use this URL for:
 
-**WebSocket API**
-```javascript
-ws://api/live/products
-// Real-time updates
-// Push notifications
-// Live queries
+* Frontend
+* Backend
+* Google OAuth redirect
+* ConfigMap
+
+---
+
+# 🔐 **Google OAuth2 Setup**
+
+### Required Redirect URI:
+
+```
+https://<ngrok-domain>/login/oauth2/code/google
 ```
 
-</td></tr>
-</table>
+### Authorized JavaScript Origin:
 
-### 🔐 Security That Just Works
+```
+https://<ngrok-domain>
+```
+
+### Authorized Domain:
+
+```
+<ngrok-domain>
+```
+
+---
+
+# 🔧 Backend Configuration (Spring Boot)
+
+File: `application.yml`
 
 ```yaml
-Authentication:
-  ✓ OAuth2 (Google, GitHub, Azure)
-  ✓ JWT with refresh tokens
-  ✓ API keys & webhooks
-  ✓ 2FA support
+server:
+  forward-headers-strategy: framework
 
-Authorization:
-  ✓ Role-based access (RBAC)
-  ✓ Resource-level permissions
-  ✓ Rate limiting
-  ✓ IP whitelisting
-
-Compliance:
-  ✓ SOC 2 certified
-  ✓ GDPR ready
-  ✓ HIPAA compliant
-  ✓ End-to-end encryption
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_ID}
+            client-secret: ${GOOGLE_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 ```
 
-### 📱 SDK for Every Platform
-
-<div align="center">
-
-| Frontend | Mobile | Backend | CLI |
-|:--------:|:------:|:-------:|:---:|
-| ⚛️ React | 📱 React Native | 🟢 Node.js | 💻 CLI Tool |
-| 💚 Vue | 🎨 Flutter | 🐍 Python | 🔧 VS Code |
-| 🅰️ Angular | 🍎 iOS Native | ☕ Java | 📦 npm pkg |
-| 🔶 Svelte | 🤖 Android | 🔵 Go | 🐙 GitHub |
-
-**Auto-generated • Type-safe • Always in sync**
-
-</div>
+This ensures Spring Boot uses **ngrok’s HTTPS** instead of HTTP.
 
 ---
 
-## 📊 Real-Time Analytics Dashboard
+# 🎨 Frontend Runtime ENV (config.js)
 
+ReqNest frontend uses **runtime environment variables** so no rebuild needed.
+
+### `/usr/share/nginx/html/config.js` is generated at container start:
+
+```js
+window._env_ = {
+  VITE_API_URL: "<your-ngrok-url>/api"
+};
 ```
-┌─────────────────────────────────────────────────┐
-│  📈 API Performance        🔥 Hot Today         │
-├─────────────────────────────────────────────────┤
-│  Requests:  1.2M ↑ 23%    Top Endpoint:         │
-│  Latency:   45ms ↓ 12%    /api/products  (45%)  │
-│  Errors:    0.02% ✓       Cache Hit:    89%     │
-│  Uptime:    99.99% ✓      Countries:    127     │
-└─────────────────────────────────────────────────┘
+
+### Generated by `entrypoint.sh`:
+
+```sh
+#!/bin/sh
+echo "window._env_ = {" > /usr/share/nginx/html/config.js
+echo "  VITE_API_URL: \"$VITE_API_URL\"" >> /usr/share/nginx/html/config.js
+echo "};" >> /usr/share/nginx/html/config.js
+
+exec nginx -g 'daemon off;'
 ```
 
 ---
 
-## 🚀 Tech Stack
+# 🧱 Nginx Config (Frontend)
 
-<div align="center">
+File: `nginx.conf`
 
-### Frontend
-![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+```nginx
+server {
+    listen 80;
+    server_name _;
 
-### Backend
-![Spring Boot](https://img.shields.io/badge/Spring_Boot_3-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
-![Java](https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Kafka](https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+    root /usr/share/nginx/html;
+    index index.html;
 
-### Data
-![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB_6-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white)
+    location = /config.js {
+        try_files $uri =404;
+    }
 
-### Infrastructure
-![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+    location /assets/ {
+        try_files $uri =404;
+    }
 
-</div>
-
----
-
-## 💎 Pricing
-
-<div align="center">
-
-| | **🆓 Free** | **🚀 Startup** | **💼 Pro** | **🏢 Enterprise** |
-|:---:|:---:|:---:|:---:|:---:|
-| **Price** | $0 | $99/mo | $499/mo | Custom |
-| **API Calls** | 10K | 100K | 1M | ♾️ Unlimited |
-| **Projects** | 3 | 10 | 50 | ♾️ Unlimited |
-| **Team** | 1 | 5 | 25 | ♾️ Unlimited |
-| **Storage** | 1GB | 10GB | 100GB | Custom |
-| **Support** | Community | Email | Priority ⚡ | 24/7 Dedicated 🎯 |
-| **SLA** | - | 99.9% | 99.95% | 99.99% |
-
-[Start Free →](https://app.reqnest.com/signup) No credit card required
-
-</div>
-
----
-
-## 💬 What People Are Saying
-
-<table>
-<tr>
-<td width="33%">
-
-### ⭐⭐⭐⭐⭐
-> "Reduced API dev from **6 weeks to 2 days**. Mind-blowing!"
-
-**Sarah Chen**  
-*CTO @ TechScale*
-
-</td>
-<td width="33%">
-
-### ⭐⭐⭐⭐⭐
-> "Handled **10x traffic** during launch without breaking a sweat."
-
-**Marcus Johnson**  
-*Lead Dev @ StartupGrid*
-
-</td>
-<td width="33%">
-
-### ⭐⭐⭐⭐⭐
-> "Security team approved it **in one meeting**. That's a first!"
-
-**David Kim**  
-*Security Architect*
-
-</td>
-</tr>
-</table>
-
----
-
-## 📈 Stats That Matter
-
-<div align="center">
-
-```
-🎯 10,000+        ⚡ 500,000+        📦 2M+            ⚙️ 99.99%
-Active Projects   APIs Generated     SDKs Downloaded   Uptime
-
-🚀 <50ms         💰 $250K+          🌍 127            ⭐ 10K+
-Avg Response     Saved in Dev       Countries         GitHub Stars
-```
-
-</div>
-
----
-
-## 🗺️ Roadmap
-
-```mermaid
-gantt
-    title ReqNest 2024 Roadmap
-    dateFormat  YYYY-MM
-    section Q1 ✅
-    Multi-DB Support      :done, 2024-01, 2024-03
-    AI Schema Generator   :done, 2024-01, 2024-03
-    section Q2 🚧
-    GraphQL APIs         :active, 2024-04, 2024-06
-    Mobile SDKs          :active, 2024-04, 2024-06
-    section Q3 📅
-    Workflow Automation  :2024-07, 2024-09
-    ML Integration       :2024-07, 2024-09
-    section Q4 🔮
-    Marketplace Launch   :2024-10, 2024-12
-    AI Optimization      :2024-10, 2024-12
+    location / {
+        try_files $uri /index.html;
+    }
+}
 ```
 
 ---
 
-## 🤝 Contributing
+# 🛜 Ingress Routing (Final Working Setup)
 
-We ❤️ contributors! Here's how you can help:
+```yaml
+/api            → backend:8080
+/login/oauth2   → backend:8080
+/oauth2         → backend:8080
+/               → frontend:80
+```
 
-<div align="center">
+Ingress file:
 
-| 🐛 **Report Bugs** | 💡 **Ideas** | 📖 **Docs** | 💻 **Code** |
-|:---:|:---:|:---:|:---:|
-| [Open Issue](https://github.com/reqnest/platform/issues) | [Discussions](https://github.com/reqnest/platform/discussions) | [Edit Docs](https://github.com/reqnest/docs) | [Send PR](https://github.com/reqnest/platform/pulls) |
-
-</div>
-
-```bash
-# Quick Setup
-git clone https://github.com/reqnest/platform.git
-cd reqnest-platform
-docker-compose up -d
-npm run dev
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: reqnest-ingress
+  namespace: reqnest
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+          - path: /login/oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
 ```
 
 ---
 
+# 📂 Folder Structure
 
+```
+reqnest/
+ ├── frontend/
+ │    ├── public/
+ │    ├── src/
+ │    ├── nginx.conf
+ │    ├── entrypoint.sh
+ │    └── Dockerfile
+ ├── backend/
+ │    ├── src/
+ │    ├── application.yml
+ │    └── Dockerfile
+ ├── k8s/
+ │    ├── mysql.yml
+ │    ├── mongo.yml
+ │    ├── redis.yml
+ │    ├── backend-deployment.yml
+ │    ├── frontend-deployment.yml
+ │    └── ingress.yml
+ ├── docker-compose.yml
+ └── README.md
+```
 
-## 📞 Get In Touch
+---
+
+# 🧪 Health Checks
+
+### Frontend:
+
+```
+https://<ngrok>/config.js
+https://<ngrok>/
+```
+
+### Backend:
+
+```
+https://<ngrok>/api/health
+```
+
+### OAuth:
+
+```
+https://<ngrok>/oauth2/authorization/google
+```
+
+---
+
+# 🛠 Troubleshooting
+
+### ❌ Google Redirect Mismatch
+
+Fix by adding:
+
+```
+server.forward-headers-strategy: framework
+```
+
+### ❌ `/config.js` 404
+
+Your nginx.conf is missing:
+
+```
+location = /config.js
+```
+
+### ❌ 500 on frontend root
+
+Nginx recursion — fix try_files:
+
+```
+try_files $uri /index.html;
+```
+
+### ❌ Ngrok not working
+
+Restart:
+
+```
+ngrok http http://localhost:8080
+```
+
+Add new domain to Google Console.
+
+---
+
+# 📞 Contact
+
+**Website:** [https://reqnest.com](https://reqnest.com)
+**Support:** [support@reqnest.com](mailto:support@reqnest.com)
+**Discord:** [https://discord.gg/reqnest](https://discord.gg/reqnest)
+
+---
 
 <div align="center">
 
-[![Website](https://img.shields.io/badge/🌐_Website-reqnest.com-blueviolet?style=for-the-badge)](https://reqnest.com)
-[![Docs](https://img.shields.io/badge/📚_Docs-docs.reqnest.com-blue?style=for-the-badge)](https://docs.reqnest.com)
-[![Discord](https://img.shields.io/badge/💬_Discord-Join_Community-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/reqnest)
-[![Twitter](https://img.shields.io/badge/🐦_Twitter-@reqnest-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/reqnest)
+### 🚀 Ready to 10x Your Backend Development?
 
-**Enterprise?** sales@reqnest.com | +1 (555) 123-REQNEST
+[![Get Started](https://img.shields.io/badge/Start_Free-Now-green?style=for-the-badge)](https://app.reqnest.com/signup)
 
-</div>
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-### 🚀 Ready to 10x Your API Development?
-
-[![Get Started](https://img.shields.io/badge/🎯_Get_Started_Now-FREE-success?style=for-the-badge&labelColor=blueviolet)](https://app.reqnest.com/signup)
-[![Book Demo](https://img.shields.io/badge/📅_Book_Demo-ENTERPRISE-blue?style=for-the-badge)](https://calendly.com/reqnest-demo)
-
-**Join 10,000+ developers building the future, faster.**
-
----
-
-*Made with ❤️ by developers, for developers, across 15 countries*
-
-[![GitHub stars](https://img.shields.io/github/stars/reqnest/platform?style=social)](https://github.com/reqnest/platform)
-[![Twitter Follow](https://img.shields.io/twitter/follow/reqnest?style=social)](https://twitter.com/reqnest)
+**Built with ❤️ for developers**
 
 </div>
+```
