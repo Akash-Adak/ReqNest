@@ -5,12 +5,13 @@ metadata:
   namespace: reqnest
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
+
+          # === BACKEND API ===
           - path: /api
             pathType: Prefix
             backend:
@@ -19,6 +20,7 @@ spec:
                 port:
                   number: 8080
 
+          # === OAUTH2 AUTH + CALLBACK ===
           - path: /login/oauth2
             pathType: Prefix
             backend:
@@ -27,6 +29,15 @@ spec:
                 port:
                   number: 8080
 
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+
+          # === FRONTEND (React SPA) ===
           - path: /
             pathType: Prefix
             backend:
