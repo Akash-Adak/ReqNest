@@ -24,3 +24,4 @@ COPY dynamic-api-dashboard/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
