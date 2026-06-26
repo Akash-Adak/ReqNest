@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
@@ -20,8 +20,9 @@ import {
   ClockIcon,
   CodeBracketIcon
 } from "@heroicons/react/24/outline";
-
+import { getApiUrl } from "../utils/apiUrl";
 export default function ApiTesterTabs() {
+  const baseUrl = getApiUrl();
   const { apiName } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -31,7 +32,7 @@ export default function ApiTesterTabs() {
   const [updateAll, setUpdateAll] = useState(false);
   const [updateField, setUpdateField] = useState("id");
 
-  const [endpoints, setEndpoints] = useState([
+  const endpoints = [
     { 
       id: 1, 
       label: "Create", 
@@ -82,7 +83,7 @@ export default function ApiTesterTabs() {
       icon: <DeleteIcon className="h-5 w-5" />,
       color: "red"
     }
-  ]);
+  ];
 
   const [activeId, setActiveId] = useState(1);
   const [headersText, setHeadersText] = useState(`{
@@ -90,7 +91,7 @@ export default function ApiTesterTabs() {
 }`);
 
 
-const baseUrl = window._env_?.VITE_API_URL;
+// const getApiUrl = window._env_?.VITE_API_URL;
   const [responses, setResponses] = useState({});
   const [busy, setBusy] = useState(false);
   const [requestBody, setRequestBody] = useState("{}");
@@ -172,7 +173,7 @@ const baseUrl = window._env_?.VITE_API_URL;
         });
         setSchemaError(null);
       })
-      .catch((err) => setSchemaError(err.message || String(err)))
+        .catch((err) => setSchemaError(err.message || String(err)))
       .finally(() => setLoadingSchema(false));
   }, [apiName, baseUrl]);
 
@@ -316,15 +317,15 @@ const baseUrl = window._env_?.VITE_API_URL;
       const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
       if (diffHrs > 0) return `${diffHrs}h ${diffMins}m`;
       return `${diffMins}m`;
-    } catch (e) {
+    } catch {
       return "24h";
     }
   }
 
-  async function generateAiSample(schema) {
+  const generateAiSample = useCallback(async (schema) => {
     try {
       const res = await axios.post(
-       `${baseUrl}/api/schema/generate-test-data`,
+      `${baseUrl}/api/schema/generate-test-data`,
         schema, 
         { withCredentials: true }
       );
@@ -333,7 +334,7 @@ const baseUrl = window._env_?.VITE_API_URL;
       console.error("AI suggestion failed", err);
       return generateEmptyKeysFromSchema(schema);
     }
-  }
+  }, [baseUrl]);
 
   const getColorClass = (color) => {
     const colorMap = {

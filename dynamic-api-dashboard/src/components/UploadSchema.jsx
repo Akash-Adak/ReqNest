@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Ajv from "ajv";
+import { getApiUrl } from "../utils/apiUrl";
 import { 
   ArrowUpTrayIcon, 
   LightBulbIcon, 
@@ -23,7 +24,7 @@ import {
 const ajv = new Ajv();
 
 export default function UploadSchema() {
-const baseUrl = window._env_?.VITE_API_URL;
+  const baseUrl = getApiUrl();
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState("");
