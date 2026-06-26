@@ -27,3 +27,29 @@
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+@keyframes float {
+  0%,100%{
+    transform:translateY(0px);
+  }
+  50%{
+    transform:translateY(-18px);
+  }
+}
+
+.animate-float{
+  animation:float 8s ease-in-out infinite;
+}
+
+@keyframes glow{
+  0%,100%{
+    opacity:.5;
+  }
+  50%{
+    opacity:1;
+  }
+}
+
+.animate-glow{
+  animation:glow 3s ease infinite;
+}

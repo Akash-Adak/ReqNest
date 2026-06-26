@@ -1,15 +1,17 @@
 // src/context/AuthProvider.js
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api";
+import { getApiUrl } from "../utils/apiUrl";
 
 const AuthContext = createContext();
 
 const USER_STORAGE_KEY = "user";
 const USER_EXPIRY_KEY = "user_expiry";
+const AUTH_TOKEN_KEY = "authToken";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
 
 export const AuthProvider = ({ children }) => {
-const baseUrl = window._env_?.VITE_API_URL;
+const baseUrl = getApiUrl();
 
 
 
@@ -49,6 +51,7 @@ const baseUrl = window._env_?.VITE_API_URL;
   const clearStorage = () => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(USER_EXPIRY_KEY);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
   };
 
   /** Loads user from localStorage if valid */
@@ -56,10 +59,14 @@ const baseUrl = window._env_?.VITE_API_URL;
     try {
       const storedUser = localStorage.getItem(USER_STORAGE_KEY);
       const expiry = localStorage.getItem(USER_EXPIRY_KEY);
+      const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
       const now = Date.now();
 
       if (storedUser && expiry && now < Number(expiry)) {
         setUser(JSON.parse(storedUser));
+        return true;
+      } else if (storedToken) {
+        fetchUser();
         return true;
       } else {
         clearStorage();
@@ -98,6 +105,17 @@ const baseUrl = window._env_?.VITE_API_URL;
     clearStorage();
   };
 
+  /** Stores token from OAuth callback and refreshes the authenticated user */
+  const handleToken = async (token) => {
+    if (!token) {
+      handleLogoutCleanup();
+      return;
+    }
+
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    await fetchUser();
+  };
+
   /** Starts login flow with OAuth2 provider */
   const login = (provider) => {
     handleLogoutCleanup();
@@ -117,7 +135,7 @@ const baseUrl = window._env_?.VITE_API_URL;
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, fetchUser, handleToken }}>
       {children}
     </AuthContext.Provider>
   );
