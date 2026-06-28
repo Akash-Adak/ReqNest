@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Ajv from "ajv";
@@ -43,27 +43,7 @@ export default function UploadSchema() {
   const [aiLoading, setAiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("manual");
 
-  useEffect(() => {
-    if (location.state?.existingApi) {
-      setExistingApi(location.state.existingApi);
-      getSchemaDetails(location.state.existingApi);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    if (!schema) {
-      setIsValidJson(true);
-      return;
-    }
-    try {
-      JSON.parse(schema);
-      setIsValidJson(true);
-    } catch (err) {
-      setIsValidJson(false);
-    }
-  }, [schema]);
-
-  const getSchemaDetails = async (apiData) => {
+  const getSchemaDetails = useCallback(async (apiData) => {
     try {
       console.log("Loading existing API:", apiData);
       const response = await axios.get(
@@ -78,7 +58,7 @@ export default function UploadSchema() {
         try {
           const parsedSchema = JSON.parse(formattedSchema);
           formattedSchema = JSON.stringify(parsedSchema, null, 2);
-        } catch (e) {
+        } catch {
           formattedSchema = formattedSchema.replace(/\\n/g, '\n');
           formattedSchema = formattedSchema.replace(/\\t/g, '\t');
           formattedSchema = formattedSchema.replace(/\\"/g, '"');
@@ -96,7 +76,27 @@ export default function UploadSchema() {
         type: "error"
       });
     }
-  };
+  }, [baseUrl]);
+
+  useEffect(() => {
+    if (location.state?.existingApi) {
+      setExistingApi(location.state.existingApi);
+      getSchemaDetails(location.state.existingApi);
+    }
+  }, [location.state, getSchemaDetails]);
+
+  useEffect(() => {
+    if (!schema) {
+      setIsValidJson(true);
+      return;
+    }
+    try {
+      JSON.parse(schema);
+      setIsValidJson(true);
+    } catch {
+      setIsValidJson(false);
+    }
+  }, [schema]);
 
   const addField = () => {
     setFields([...fields, { name: "", type: "string", description: "", enum: [] }]);
@@ -133,7 +133,11 @@ export default function UploadSchema() {
     try {
       const response = await axios.post(
         `${baseUrl}/api/schema/generate`,
-        { prompt: aiPrompt }, 
+        {
+          prompt: aiPrompt,
+          description: aiPrompt,
+          apiName: name
+        }, 
         { withCredentials: true }
       );
 
@@ -144,7 +148,7 @@ export default function UploadSchema() {
         try {
           const parsedSchema = JSON.parse(generatedSchema);
           generatedSchema = JSON.stringify(parsedSchema, null, 2);
-        } catch (e) {
+        } catch {
           generatedSchema = generatedSchema.replace(/\\n/g, '\n');
           generatedSchema = generatedSchema.replace(/\\t/g, '\t');
           generatedSchema = generatedSchema.replace(/\\"/g, '"');
@@ -160,7 +164,7 @@ export default function UploadSchema() {
     } catch (err) {
       console.error("AI generation error:", err);
       setMessage({
-        text: "Error generating schema: " + (err.response?.data?.message || err.message),
+        text: "Error generating schema: " + (err.response?.data?.message || err.response?.data?.error || err.response?.data || err.message),
         type: "error"
       });
     } finally {

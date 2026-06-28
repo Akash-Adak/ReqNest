@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { getApiUrl } from "../utils/apiUrl";
+import apiClient from "../api";
 import { 
   ArrowPathIcon, 
   DocumentArrowDownIcon, 
@@ -20,10 +20,8 @@ import {
   ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 import jsPDF from "jspdf";
-import axios from "axios";
 
 export default function ApiList() {
-  const baseUrl = getApiUrl();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [apis, setApis] = useState([]);
@@ -39,14 +37,30 @@ export default function ApiList() {
     documented: 0
   });
 
+  const normalizeApiList = (data) => {
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    if (Array.isArray(data?.apis)) {
+      return data.apis;
+    }
+
+    if (Array.isArray(data?.data)) {
+      return data.data;
+    }
+
+    return [];
+  };
+
   // Fetch APIs from backend
   const fetchApis = useCallback(() => {
     setLoading(true);
     setError(null);
-    axios
-      .get(`${baseUrl}/apis`, { withCredentials: true })
+    apiClient
+      .get("/apis")
       .then((res) => {
-        const apiData = res.data || [];
+        const apiData = normalizeApiList(res.data);
         setApis(apiData);
         updateStats(apiData);
       })
@@ -57,7 +71,7 @@ export default function ApiList() {
         updateStats([]);
       })
       .finally(() => setLoading(false));
-  }, [baseUrl]);
+  }, []);
 
   const updateStats = (apiList) => {
     setStats({
@@ -86,7 +100,7 @@ export default function ApiList() {
     }
     setDeleting(api.id);
     try {
-      await axios.delete(`${baseUrl}/apis/${api.name}`, { withCredentials: true });
+      await apiClient.delete(`/apis/${api.name}`);
       const updatedApis = apis.filter(a => a.id !== api.id);
       setApis(updatedApis);
       updateStats(updatedApis);
@@ -106,7 +120,7 @@ export default function ApiList() {
 
     setDownloading(prev => prev + 1);
     try {
-      const res = await axios.get(`${baseUrl}/apis/${api.name}`, { withCredentials: true });
+      const res = await apiClient.get(`/apis/${api.name}`);
       const data = res.data;
       
       if (!data) {
