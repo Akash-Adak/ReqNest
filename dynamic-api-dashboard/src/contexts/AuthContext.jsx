@@ -36,37 +36,80 @@ export const AuthProvider = ({ children }) => {
     clearStorage();
   }, [clearStorage]);
 
-  const fetchUser = useCallback(async () => {
-    try {
-      const res = await api.get("/api/user/me", { withCredentials: true });
+const fetchUser = useCallback(async () => {
+  try {
+    const res = await api.get("/api/user/me");
 
-      if (res.data?.name) {
-        setUser(res.data);
+    console.log("fetchUser Success");
+    console.log(res.data);
 
-        const expiryTime = Date.now() + EXPIRY_TIME;
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(res.data));
-        localStorage.setItem(USER_EXPIRY_KEY, expiryTime.toString());
-      } else {
-        handleLogoutCleanup();
-      }
-    } catch (err) {
-      console.error("Fetch user failed:", err);
-      handleLogoutCleanup();
+    setUser(res.data);
+  } catch (err) {
+    console.error("fetchUser Error");
+    console.error(err);
+
+    if (err.response) {
+      console.log("Status:", err.response.status);
+      console.log("Response:", err.response.data);
     }
-  }, [handleLogoutCleanup]);
 
-  const handleToken = useCallback(
-    async (token) => {
-      if (!token) {
-        handleLogoutCleanup();
-        return;
+    // Don't clear storage while debugging
+    // handleLogoutCleanup();
+  }
+}, []);
+
+const handleToken = useCallback(
+  async (token) => {
+    console.log("========== OAUTH LOGIN ==========");
+
+    if (!token) {
+      console.error("❌ No token received from backend");
+      return;
+    }
+
+    console.log("✅ JWT Received:");
+    console.log(token);
+
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+
+    console.log("✅ Saved Token:");
+    console.log(localStorage.getItem(AUTH_TOKEN_KEY));
+
+    try {
+      console.log("📡 Calling /api/user/me ...");
+
+      const res = await api.get("/api/user/me");
+
+      console.log("✅ User Response:");
+      console.log(res.data);
+
+      setUser(res.data);
+
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(res.data));
+      localStorage.setItem(
+        USER_EXPIRY_KEY,
+        (Date.now() + EXPIRY_TIME).toString()
+      );
+    } catch (err) {
+      console.error("❌ Fetch User Failed");
+      console.error(err);
+
+      if (err.response) {
+        console.log("Status:", err.response.status);
+        console.log("Response:", err.response.data);
       }
 
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-      await fetchUser();
-    },
-    [fetchUser, handleLogoutCleanup]
-  );
+      console.log("Token still in localStorage:");
+      console.log(localStorage.getItem(AUTH_TOKEN_KEY));
+
+      // DON'T clear storage while debugging
+      // handleLogoutCleanup();
+    }
+
+    console.log("========== END ==========");
+  },
+  []
+);
 
   const loadUserFromStorage = useCallback(
     async () => {
