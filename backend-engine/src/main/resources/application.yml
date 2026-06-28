@@ -9,6 +9,7 @@ spring:
 
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASS}
   jpa:
