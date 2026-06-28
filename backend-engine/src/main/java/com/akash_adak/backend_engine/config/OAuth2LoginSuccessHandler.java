@@ -113,10 +113,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         // Add JWT cookie
-        addJwtCookie(response, token);
+//        addJwtCookie(response, token);
 
         // Redirect to frontend
-        String queryParams = "?login=success&provider=" + URLEncoder.encode(provider, StandardCharsets.UTF_8);
+        String queryParams =
+                "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8)
+                        + "&login=success"
+                        + "&provider=" + URLEncoder.encode(provider, StandardCharsets.UTF_8);
         redirectToFrontend(response, queryParams);
     }
 
@@ -128,9 +131,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
 
         // Set domain only for production
-        if (!frontendApi.contains("localhost")) {
-            cookie.setDomain("reqnest.com");
-        }
+//        if (!frontendApi.contains("localhost")) {
+//            cookie.setDomain("reqnest.com");
+//        }
 
         response.addCookie(cookie);
     }
