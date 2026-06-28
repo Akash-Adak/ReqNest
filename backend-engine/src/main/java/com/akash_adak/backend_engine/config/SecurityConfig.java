@@ -1,6 +1,7 @@
 package com.akash_adak.backend_engine.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,10 @@ public class SecurityConfig {
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
     @Autowired
     AuthenticationSuccessHandler oAuth2LoginSuccessHandler;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    OAuth2LoginSuccessHandler successHandler,
@@ -39,7 +44,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
-                .logout(logout -> logout.logoutSuccessUrl("http://localhost:5173").permitAll());
+                .logout(logout -> logout.logoutSuccessUrl(frontendUrl).permitAll());
 
         http.addFilterBefore(jwtFilter,
                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
