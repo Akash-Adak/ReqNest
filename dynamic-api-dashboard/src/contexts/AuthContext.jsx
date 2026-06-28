@@ -1,5 +1,5 @@
 // src/context/AuthProvider.js
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../api";
 import { getApiUrl } from "../utils/apiUrl";
 
@@ -10,77 +10,33 @@ const USER_EXPIRY_KEY = "user_expiry";
 const AUTH_TOKEN_KEY = "authToken";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
 
+const clearAuthCallbackParams = () => {
+  window.history.replaceState({}, document.title, window.location.pathname);
+};
+
+const getAuthCallbackToken = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("token");
+};
+
 export const AuthProvider = ({ children }) => {
   const baseUrl = getApiUrl();
-
-
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const init = async () => {
-      // 1️⃣ Check query params after redirect
-      const params = new URLSearchParams(window.location.search);
-      const loginSuccess = params.get("login") === "success";
-
-      if (loginSuccess) {
-        try {
-          await fetchUser(); // fetch user from backend (cookie already set)
-        } finally {
-          // clean up query params from URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-          setLoading(false);
-        }
-        return;
-      }
-
-      // 2️⃣ If not a login redirect → try storage
-      const loaded = await loadUserFromStorage();
-      if (!loaded) {
-        // no user in storage, nothing to do
-      }
-
-      setLoading(false);
-    };
-
-    init();
-  }, []);
-
-  /** Clears localStorage keys */
-  const clearStorage = () => {
+  const clearStorage = useCallback(() => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(USER_EXPIRY_KEY);
     localStorage.removeItem(AUTH_TOKEN_KEY);
-  };
+  }, []);
 
-  /** Loads user from localStorage if valid */
-  const loadUserFromStorage = async () => {
-    try {
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-      const expiry = localStorage.getItem(USER_EXPIRY_KEY);
-      const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
-      const now = Date.now();
+  const handleLogoutCleanup = useCallback(() => {
+    setUser(null);
+    clearStorage();
+  }, [clearStorage]);
 
-      if (storedUser && expiry && now < Number(expiry)) {
-        setUser(JSON.parse(storedUser));
-        return true;
-      } else if (storedToken) {
-        await fetchUser();
-        return true;
-      } else {
-        clearStorage();
-        return false;
-      }
-    } catch (e) {
-      console.error("Error reading storage:", e);
-      clearStorage();
-      return false;
-    }
-  };
-
-  /** Fetches user from backend using session cookie */
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const res = await api.get("/api/user/me", { withCredentials: true });
 
@@ -97,32 +53,88 @@ export const AuthProvider = ({ children }) => {
       console.error("Fetch user failed:", err);
       handleLogoutCleanup();
     }
-  };
+  }, [handleLogoutCleanup]);
 
-  /** Resets user state + clears storage */
-  const handleLogoutCleanup = () => {
-    setUser(null);
-    clearStorage();
-  };
+  const handleToken = useCallback(
+    async (token) => {
+      if (!token) {
+        handleLogoutCleanup();
+        return;
+      }
 
-  /** Stores token from OAuth callback and refreshes the authenticated user */
-  const handleToken = async (token) => {
-    if (!token) {
-      handleLogoutCleanup();
-      return;
-    }
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      await fetchUser();
+    },
+    [fetchUser, handleLogoutCleanup]
+  );
 
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
-    await fetchUser();
-  };
+  const loadUserFromStorage = useCallback(
+    async () => {
+      try {
+        const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+        const expiry = localStorage.getItem(USER_EXPIRY_KEY);
+        const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+        const now = Date.now();
 
-  /** Starts login flow with OAuth2 provider */
+        if (storedUser && expiry && now < Number(expiry)) {
+          setUser(JSON.parse(storedUser));
+          return true;
+        }
+
+        if (storedToken) {
+          await fetchUser();
+          return true;
+        }
+
+        clearStorage();
+        return false;
+      } catch (e) {
+        console.error("Error reading storage:", e);
+        clearStorage();
+        return false;
+      }
+    },
+    [clearStorage, fetchUser]
+  );
+
+  useEffect(() => {
+    const init = async () => {
+      const token = getAuthCallbackToken();
+      const params = new URLSearchParams(window.location.search);
+      const loginSuccess = params.get("login") === "success";
+
+      if (token) {
+        try {
+          await handleToken(token);
+        } finally {
+          clearAuthCallbackParams();
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (loginSuccess) {
+        try {
+          await fetchUser();
+        } finally {
+          clearAuthCallbackParams();
+          setLoading(false);
+        }
+        return;
+      }
+
+      await loadUserFromStorage();
+      setLoading(false);
+    };
+
+    init();
+  }, [fetchUser, handleToken, loadUserFromStorage]);
+
   const login = (provider) => {
     handleLogoutCleanup();
     window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
-  /** Logs out backend + clears storage */
   const logout = async () => {
     try {
       await api.post("/api/logout", {}, { withCredentials: true });
@@ -141,4 +153,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
