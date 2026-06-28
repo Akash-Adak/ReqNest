@@ -115,6 +115,20 @@ export default function ApiTesterTabs() {
     return sample;
   }
 
+  const generateAiSample = useCallback(async (schema) => {
+    try {
+      const res = await axios.post(
+      `${baseUrl}/api/schema/generate-test-data`,
+        schema, 
+        { withCredentials: true }
+      );
+      return res.data;
+    } catch (err) {
+      console.error("AI suggestion failed", err);
+      return generateEmptyKeysFromSchema(schema);
+    }
+  }, [baseUrl]);
+
   // Fetch schema and set user headers
   useEffect(() => {
     setLoadingSchema(true);
@@ -175,7 +189,7 @@ export default function ApiTesterTabs() {
       })
         .catch((err) => setSchemaError(err.message || String(err)))
       .finally(() => setLoadingSchema(false));
-  }, [apiName, baseUrl]);
+  }, [apiName, baseUrl, generateAiSample]);
 
   const active = endpoints.find((e) => e.id === activeId) || endpoints[0];
 
@@ -321,20 +335,6 @@ export default function ApiTesterTabs() {
       return "24h";
     }
   }
-
-  const generateAiSample = useCallback(async (schema) => {
-    try {
-      const res = await axios.post(
-      `${baseUrl}/api/schema/generate-test-data`,
-        schema, 
-        { withCredentials: true }
-      );
-      return res.data;
-    } catch (err) {
-      console.error("AI suggestion failed", err);
-      return generateEmptyKeysFromSchema(schema);
-    }
-  }, [baseUrl]);
 
   const getColorClass = (color) => {
     const colorMap = {
