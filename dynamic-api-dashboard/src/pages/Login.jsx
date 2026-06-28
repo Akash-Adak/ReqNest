@@ -21,10 +21,16 @@ const Login = ({ isOpen, onClose }) => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
 
-    if (token) {
-      handleToken(token);
-      navigate("/apis");
-    }
+    const completeLogin = async () => {
+      if (!token) {
+        return;
+      }
+
+      await handleToken(token);
+      navigate("/apis", { replace: true });
+    };
+
+    completeLogin();
   }, [location.search, handleToken, navigate]);
 
   const handleLogin = async (provider) => {

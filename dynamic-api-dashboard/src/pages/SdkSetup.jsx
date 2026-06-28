@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../utils/apiUrl";
 import { 
   DocumentArrowDownIcon,
   ArrowLeftIcon,
@@ -17,7 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function SdkSetup() {
-const baseUrl = window._env_?.VITE_API_URL;
+  const baseUrl = getApiUrl();
   const { apiName } = useParams();
   const [api, setApi] = useState(null);
   const [loading, setLoading] = useState(true);
