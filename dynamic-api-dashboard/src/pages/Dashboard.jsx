@@ -14,8 +14,10 @@ import {
   DocumentDuplicateIcon
 } from "@heroicons/react/24/outline";
 import ServerStackIcon from '@mui/icons-material/Storage';
+import { getApiUrl } from "../utils/apiUrl";
 
 const Dashboard = () => {
+  const baseUrl = getApiUrl();
   const { user } = useAuth();
   const [stats, setStats] = useState({
     apiCalls: 0,
@@ -39,13 +41,13 @@ const Dashboard = () => {
         
         // In a real app, you would fetch from your actual API endpoints
         const [statsResponse, activityResponse, keysResponse] = await Promise.all([
-          fetch("/api/dashboard/stats", {
+          fetch(`${baseUrl}/api/dashboard/stats`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch("/api/activity/recent", {
+          fetch(`${baseUrl}/api/activity/recent`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch("/api/keys", {
+          fetch(`${baseUrl}/api/keys`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -108,7 +110,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("authToken");
       
       // In a real app, this would call your backend
-      const response = await fetch("/api/keys/generate", {
+      const response = await fetch(`${baseUrl}/api/keys/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +165,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("authToken");
       
       // In a real app, this would call your backend
-      const response = await fetch(`/api/keys/${keyId}`, {
+      const response = await fetch(`${baseUrl}/api/keys/${keyId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`

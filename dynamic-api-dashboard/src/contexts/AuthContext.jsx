@@ -11,7 +11,7 @@ const AUTH_TOKEN_KEY = "authToken";
 const EXPIRY_TIME = 30 * 60 * 1000; // 30 min
 
 export const AuthProvider = ({ children }) => {
-const baseUrl = getApiUrl();
+  const baseUrl = getApiUrl();
 
 
 
@@ -36,7 +36,7 @@ const baseUrl = getApiUrl();
       }
 
       // 2️⃣ If not a login redirect → try storage
-      const loaded = loadUserFromStorage();
+      const loaded = await loadUserFromStorage();
       if (!loaded) {
         // no user in storage, nothing to do
       }
@@ -55,7 +55,7 @@ const baseUrl = getApiUrl();
   };
 
   /** Loads user from localStorage if valid */
-  const loadUserFromStorage = () => {
+  const loadUserFromStorage = async () => {
     try {
       const storedUser = localStorage.getItem(USER_STORAGE_KEY);
       const expiry = localStorage.getItem(USER_EXPIRY_KEY);
@@ -66,7 +66,7 @@ const baseUrl = getApiUrl();
         setUser(JSON.parse(storedUser));
         return true;
       } else if (storedToken) {
-        fetchUser();
+        await fetchUser();
         return true;
       } else {
         clearStorage();

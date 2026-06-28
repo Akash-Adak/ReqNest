@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getApiUrl } from "../utils/apiUrl";
 
 // Mock icons for demo
 const CheckIcon = () => (
@@ -22,7 +23,7 @@ const toast = {
 const Toaster = () => null;
 
 export default function Plans() {
-const baseUrl = window._env_?.VITE_API_URL;
+  const baseUrl = getApiUrl();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [userData, setUserData] = useState(null);
